@@ -23,6 +23,7 @@ const state = {
   isTTSActive: false,
   isVoiceModeActive: false,
   voiceRate: 0.95,
+  isCurrentlySpeaking: false, // Track active speech
   utteranceQueue: [] // Prevent garbage collection
 };
 
@@ -517,8 +518,28 @@ function cleanTextForSpeech(text) {
     .trim();
 }
 
+async function stopSpeaking() {
+  if (Capacitor.isNativePlatform()) {
+    await TextToSpeech.stop();
+  } else if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  state.isCurrentlySpeaking = false;
+  // Reset all speaker icons in the UI
+  document.querySelectorAll('.replay-btn i').forEach(icon => {
+    icon.setAttribute('data-lucide', 'volume-2');
+  });
+  lucide.createIcons();
+}
+
 async function speak(text, force = false) {
   if (!force && (!state.isTTSActive || (!window.speechSynthesis && !Capacitor.isNativePlatform()))) return;
+
+  if (state.isCurrentlySpeaking) {
+    await stopSpeaking();
+  }
+
+  state.isCurrentlySpeaking = true;
 
   if (Capacitor.isNativePlatform()) {
     try {
@@ -534,8 +555,10 @@ async function speak(text, force = false) {
         volume: 1.0,
         category: 'ambient'
       });
+      state.isCurrentlySpeaking = false;
     } catch (e) {
       console.error("Native TTS Error:", e);
+      state.isCurrentlySpeaking = false;
     }
     return;
   }
@@ -569,6 +592,10 @@ async function speak(text, force = false) {
       state.utteranceQueue.push(utterance); // Keep in memory
       window.speechSynthesis.speak(utterance);
     });
+    state.isCurrentlySpeaking = false;
+    // Reset all icons
+    document.querySelectorAll('.replay-btn i').forEach(i => i.setAttribute('data-lucide', 'volume-2'));
+    lucide.createIcons();
   }, 50);
 }
 
@@ -936,9 +963,19 @@ function addMessage(sender, text) {
       <button class="replay-btn" title="Speak message"><i data-lucide="volume-2"></i></button>
     `;
     const replayBtn = msg.querySelector('.replay-btn');
-    replayBtn.onclick = () => {
-      const currentText = msg.querySelector('.msg-content').textContent;
-      speak(currentText, true); // Force speak regardless of global toggle
+    replayBtn.onclick = async () => {
+      const icon = replayBtn.querySelector('i');
+      if (state.isCurrentlySpeaking) {
+        await stopSpeaking();
+        icon.setAttribute('data-lucide', 'volume-2');
+      } else {
+        const currentText = msg.querySelector('.msg-content').textContent;
+        icon.setAttribute('data-lucide', 'square'); // Stop icon
+        lucide.createIcons();
+        await speak(currentText, true);
+        icon.setAttribute('data-lucide', 'volume-2');
+      }
+      lucide.createIcons();
     };
   } else {
     msg.textContent = text;
