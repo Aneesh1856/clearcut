@@ -3,7 +3,7 @@
  * Interfaces with the Mistral API (Gemini 3.1 Pro Proxy) for high-fidelity legal analysis.
  */
 
-const MISTRAL_API_KEY = import.meta.env.VITE_MISTRAL_API_KEY || 'a7qYpNeLXhxp7MQ9NcTPwAAz5yzxVnFz';
+const MISTRAL_API_KEY = import.meta.env.VITE_MISTRAL_API_KEY;
 const API_URL = 'https://api.mistral.ai/v1/chat/completions';
 
 /**
