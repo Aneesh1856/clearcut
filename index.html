@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal Sentinel | AI Auditor</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.4.8/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  
+  <!-- Premium Branding -->
+  <link rel="icon" type="image/png" href="/logo.png">
+  <i data-lucide="shield-check" style="display:none;"></i>
+  <link rel="apple-touch-icon" href="/logo.png">
+  <meta name="apple-mobile-web-app-title" content="Sentinel">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div id="app">
+    <!-- Premium Header -->
+    <header class="main-header">
+      <div class="header-inner container">
+        <div class="logo-area">
+          <div class="logo-box">
+             <img src="/logo.png" alt="Sentinel Logo" style="width: 24px; height: 24px; object-fit: contain;">
+          </div>
+          <span class="logo-text">Legal Sentinel</span>
+        </div>
+        <div class="status-badge" style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--primary-glow); padding: 4px 12px; border-radius: 99px;">
+          <div class="dot"></div>
+          <span style="font-size: 0.65rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; font-family: var(--font-hero);">DUAL ENGINE</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="views">
+        
+        <!-- DASHBOARD VIEW -->
+        <section id="home" class="view active">
+          <div class="hero-section" style="margin-bottom: 2rem;">
+            <h1 class="hero-title">Your Automated <span class="text-gradient">Legal Shield</span></h1>
+            <p class="hero-subtitle">The first AI auditor that spots "Fine Print" traps before you sign. Protect your rights in seconds.</p>
+          </div>
+
+          <!-- Dual-Engine Explainer Section -->
+          <div class="sentinel-card" style="border: 1px solid var(--primary-glow); background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); margin-bottom: 2rem; padding: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+               <i data-lucide="zap" style="width: 16px; color: var(--primary);"></i>
+               <h3 style="margin: 0; font-size: 0.95rem; font-family: var(--font-hero);">The Sentinel Dual-Core</h3>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+              Deep legal reasoning by <span style="color: var(--primary); font-weight: 700;">Gemini 3.1 Pro</span> fused with the real-time speed of <span style="color: var(--primary); font-weight: 700;">Mistral 7B</span>.
+            </p>
+          </div>
+
+          <div class="home-layout">
+            <a href="#audit" class="sentinel-card scout-glow" style="position: relative; overflow: hidden;">
+              <div class="tag" style="position: absolute; top: 12px; right: 12px; margin: 0; background: rgba(56, 189, 248, 0.1); color: var(--primary); font-size: 0.55rem; padding: 2px 6px;">MISTRAL 7B</div>
+              <i data-lucide="eye" class="card-icon" style="color: var(--accent);"></i>
+              <span class="card-title">Screen Scout</span>
+              <span class="card-subtitle">Real-time harvest & terms parsing</span>
+            </a>
+            <a href="#audit" class="sentinel-card" style="position: relative; overflow: hidden;">
+              <div class="tag" style="position: absolute; top: 12px; right: 12px; margin: 0; background: rgba(244, 63, 94, 0.1); color: var(--accent); font-size: 0.55rem; padding: 2px 6px;">LENS CORE</div>
+              <i data-lucide="camera" class="card-icon"></i>
+              <span class="card-title">Live Lens</span>
+              <span class="card-subtitle">Fast scan paper documents & notices</span>
+            </a>
+            <a href="#audit" class="sentinel-card" style="position: relative; overflow: hidden;">
+              <div class="tag" style="position: absolute; top: 12px; right: 12px; margin: 0; background: var(--primary-glow); color: var(--primary); font-size: 0.55rem; padding: 2px 6px;">GEMINI 3.1 PRO</div>
+              <i data-lucide="file-search" class="card-icon"></i>
+              <span class="card-title">Contract Audit</span>
+              <span class="card-subtitle">Deep legal reasoning & risk analysis</span>
+            </a>
+            <a href="#chat" class="sentinel-card">
+              <i data-lucide="message-square" class="card-icon"></i>
+              <span class="card-title">Legal Chat</span>
+              <span class="card-subtitle">Text-based legal inquiries</span>
+            </a>
+            <a href="#voice" class="sentinel-card" style="border: 1px solid var(--safe-glow);">
+              <i data-lucide="phone" class="card-icon" style="color: var(--safe);"></i>
+              <span class="card-title">Voice Scout</span>
+              <span class="card-subtitle">Hands-free voice assistance</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- AUDIT VIEW (Restored Triple Tools) -->
+        <section id="audit" class="view">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+            <h1 style="margin: 0; font-size: 1.50rem;">Legal Auditor</h1>
+            
+            <div class="lang-selector-pill" id="lang-menu-trigger">
+               <i data-lucide="languages" style="width: 14px; color: var(--primary);"></i>
+               <span class="active-lang-text">English</span>
+               <div id="lang-dropdown" class="glass-card lang-dropdown">
+                  <div class="lang-option active" data-lang="eng">English</div>
+                  <div class="lang-option" data-lang="hin">Hindi (हिन्दी)</div>
+                  <div class="lang-option" data-lang="kan">Kannada (ಕನ್ನಡ)</div>
+                  <div class="lang-option" data-lang="tam">Tamil (தமிழ்)</div>
+                  <div class="lang-option" data-lang="tel">Telugu (తెಲುಗು)</div>
+                  <div class="lang-option" data-lang="ben">Bengali (বাংলা)</div>
+               </div>
+            </div>
+          </div>
+          
+          <div class="home-layout" style="margin-bottom: 2rem;">
+            <!-- TOOL 1: UPLOAD -->
+            <div class="sentinel-card" id="file-trigger" style="cursor: pointer; display: flex; align-items: center; gap: 1.5rem;">
+              <i data-lucide="upload-cloud" style="width: 24px; color: var(--primary);"></i>
+              <div>
+                <span class="card-title" style="margin: 0;">Upload File</span>
+                <span class="card-subtitle">PDF, Docx, or Image</span>
+              </div>
+              <input type="file" id="audit-file-input" style="display: none;" accept=".pdf,.doc,.docx,.png,.jpg">
+            </div>
+
+            <!-- TOOL 2: CAMERA -->
+            <div class="sentinel-card" id="camera-trigger" style="cursor: pointer; display: flex; align-items: center; gap: 1.5rem;">
+              <i data-lucide="camera" style="width: 24px; color: var(--primary);"></i>
+              <div>
+                <span class="card-title" style="margin: 0;">Direct Scan</span>
+                <span class="card-subtitle">Use camera to audit paper</span>
+              </div>
+            </div>
+
+            <!-- TOOL 3: SCOUT -->
+            <div class="sentinel-card" id="scout-trigger" style="cursor: pointer; display: flex; align-items: center; gap: 1.5rem;">
+              <i data-lucide="monitor" style="width: 24px; color: var(--accent);"></i>
+              <div>
+                <span class="card-title" style="margin: 0;">Screen Scout</span>
+                <span class="card-subtitle">Harvest text from other apps</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="audit-file-preview" style="display: none; margin-bottom: 1.5rem;"></div>
+          <textarea class="input-area" style="min-height: 120px;" placeholder="...or paste document text here for instant analysis"></textarea>
+          
+          <button class="btn-primary" id="run-audit">
+            <i data-lucide="scan-search"></i> Run Legal Audit
+          </button>
+
+          <div id="audit-results" style="margin-top: 2rem; display: none;"></div>
+        </section>
+
+        <!-- CHAT VIEW -->
+        <section id="chat" class="view">
+          <div class="chat-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i data-lucide="bot" style="color: var(--primary);"></i>
+              <h1 style="margin: 0; font-size: 1.25rem;">Legal Scout</h1>
+            </div>
+            
+            <div class="lang-selector-pill" id="chat-lang-trigger">
+               <i data-lucide="languages" style="width: 14px; color: var(--primary);"></i>
+               <span class="active-lang-text">English</span>
+               <div class="glass-card lang-dropdown">
+                  <div class="lang-option active" data-lang="eng">English</div>
+                  <div class="lang-option" data-lang="hin">Hindi (हिन्दी)</div>
+                  <div class="lang-option" data-lang="kan">Kannada (ಕನ್ನಡ)</div>
+                  <div class="lang-option" data-lang="tam">Tamil (தமிழ்)</div>
+                  <div class="lang-option" data-lang="tel">Telugu (తెಲುಗು)</div>
+                  <div class="lang-option" data-lang="ben">Bengali (বাংলা)</div>
+               </div>
+            </div>
+          </div>
+
+          <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+              <div class="msg msg-bot">
+                <div class="msg-content">Hi! I'm your Legal Sentinel. Ask me anything about your consumer rights!</div>
+                <button class="replay-btn" title="Speak message"><i data-lucide="volume-2"></i></button>
+              </div>
+            </div>
+            
+            <div class="chat-footer">
+              <div class="chat-input-wrapper">
+                <div id="pending-attachment" class="attachment-preview"></div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <button id="chat-upload-trigger" class="icon-btn"><i data-lucide="paperclip"></i></button>
+                  <input type="file" id="chat-file-input" style="display: none;" accept=".pdf,.doc,.docx,.txt">
+                  <button id="voice-trigger" class="icon-btn"><i data-lucide="mic"></i></button>
+                  <button id="tts-trigger" class="icon-btn"><i data-lucide="volume-x"></i></button>
+                  <input type="text" class="chat-input input-area" style="margin: 0; flex: 1;" placeholder="Ask a question...">
+                  <button class="chat-send-trigger" style="background: var(--primary); color: var(--bg-color); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <i data-lucide="send" style="width: 18px;"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VOICE ASSIST VIEW -->
+        <section id="voice" class="view">
+           <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 1rem;">
+             <!-- Speed Toggle -->
+             <button id="voice-speed-trigger" class="lang-selector-pill" style="border-color: var(--primary-glow);">
+                <i data-lucide="gauge" style="width: 14px; color: var(--primary);"></i>
+                <span id="speed-text">Normal</span>
+             </button>
+
+             <div class="lang-selector-pill" id="voice-lang-trigger">
+                <i data-lucide="languages" style="width: 14px; color: var(--primary);"></i>
+                <span class="active-lang-text">English</span>
+                <div class="glass-card lang-dropdown">
+                   <div class="lang-option active" data-lang="eng">English</div>
+                   <div class="lang-option" data-lang="hin">Hindi (हिन्दी)</div>
+                   <div class="lang-option" data-lang="kan">Kannada (ಕನ್ನಡ)</div>
+                   <div class="lang-option" data-lang="tam">Tamil (தமிழ்)</div>
+                   <div class="lang-option" data-lang="tel">Telugu (తెలుಗು)</div>
+                   <div class="lang-option" data-lang="ben">Bengali (বাংলা)</div>
+                </div>
+             </div>
+           </div>
+
+           <div class="hero-section" style="margin-bottom: 2rem;">
+             <h1 class="hero-title">Voice <span class="text-gradient">Assistant</span></h1>
+             <p class="hero-subtitle">Engage in a hands-free conversation with Legal Sentinel. Perfect for quick questions or while on the move.</p>
+           </div>
+           
+           <div class="sentinel-card" style="text-align: center; padding: 3rem 1.5rem;">
+              <div class="voice-avatar" style="margin: 0 auto 2rem;">
+                <div class="avatar-ring"></div>
+                <div class="avatar-inner" style="background: var(--safe-glow);">
+                  <i data-lucide="mic" style="width: 40px; height: 40px; color: var(--safe);"></i>
+                </div>
+              </div>
+              <button class="btn-primary" id="start-voice-assist" style="background: var(--safe); color: white;">
+                <i data-lucide="phone"></i> Start Voice Scout
+              </button>
+              
+              <button id="voice-diagnostic-btn" class="icon-btn" style="margin-top: 1rem; opacity: 0.6; font-size: 0.7rem; gap: 5px; width: auto; padding: 0 10px;">
+                <i data-lucide="volume-2" style="width: 12px;"></i> Test Audio
+              </button>
+
+              <p class="text-dim" style="margin-top: 1.5rem; font-size: 0.8rem;">Supports English, Hindi, Kannada, Tamil, Telugu, and Bengali</p>
+           </div>
+        </section>
+
+        <!-- DRAFT VIEW -->
+        <section id="draft" class="view">
+          <h2 style="margin-bottom: 1rem;">Doc Generator</h2>
+          <div class="sentinel-card">
+            <label class="text-secondary" style="font-size: 0.8rem; display: block; margin-bottom: 0.5rem;">Legal Document Type</label>
+            <select class="input-area" style="margin-bottom: 1rem;">
+              <option>Subscription Cancellation</option>
+              <option>Fee Dispute Letter</option>
+              <option>Privacy Data Request</option>
+            </select>
+            <textarea class="input-area" style="min-height: 100px;" placeholder="Details (e.g. Bank name, amount)"></textarea>
+            <button class="btn-primary" id="run-draft" style="margin-top: 1rem;">
+              <i data-lucide="pen-tool"></i> Generate Draft
+            </button>
+          </div>
+          <div id="draft-results" style="margin-top: 2rem; display: none;"></div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+      <a href="#home" class="nav-item active"><i data-lucide="home"></i><span>Home</span></a>
+      <a href="#audit" class="nav-item"><i data-lucide="scan"></i><span>Audit</span></a>
+      <a href="#chat" class="nav-item"><i data-lucide="message-circle"></i><span>Chat</span></a>
+      <a href="#voice" class="nav-item"><i data-lucide="mic"></i><span>Voice</span></a>
+      <a href="#draft" class="nav-item"><i data-lucide="file-text"></i><span>Draft</span></a>
+    </nav>
+
+    <!-- Scan Overlay -->
+    <div id="scanning-overlay" class="scan-overlay">
+       <div class="scan-loader"><i data-lucide="scan-search" class="scan-icon pulse"></i></div>
+       <div id="ocr-progress" style="margin-top: 2rem; font-weight: 800; color: var(--primary);">Analyzing traps...</div>
+    </div>
+
+
+    <!-- Lens Overlay -->
+    <div id="lens-overlay" class="overlay">
+      <div class="lens-header">
+        <div style="display: flex; flex-direction: column;">
+          <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 2px;">LENS CORE V3.1</div>
+          <div style="font-size: 1rem; font-weight: 700; color: #fff;">SENTINEL VISION ACTIVE</div>
+        </div>
+        <button id="close-lens" class="icon-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="lens-viewfinder">
+        <video id="lens-video" autoplay playsinline></video>
+        <div class="laser-line"></div>
+      </div>
+      <div class="lens-controls">
+         <button id="capture-snapshot" class="btn-primary" style="width: auto; padding: 1rem 2rem; border-radius: 99px;">
+           <i data-lucide="scan-line" class="pulse"></i> CAPTURE & AUDIT NOW
+         </button>
+      </div>
+    </div>
+
+    <!-- Scout Overlay (Screen Scan Engine) -->
+    <div id="scout-overlay" class="overlay">
+        <div class="lens-header" style="background: rgba(15, 23, 42, 0.95);">
+           <div>
+             <div style="font-size: 0.6rem; color: var(--accent); font-weight: 900; letter-spacing: 2px;">SCOUT ENGINE 7B</div>
+             <div style="font-size: 1rem; font-weight: 700; color: #fff;">HARVESTING ENGINE ACTIVE</div>
+           </div>
+           <button id="stop-scout" class="icon-btn" style="color: var(--danger);"><i data-lucide="square"></i></button>
+        </div>
+        <div class="scout-preview-container" style="height: 140px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <video id="scout-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+        </div>
+        <div id="scout-text-stream" style="flex: 1; padding: 1rem; font-family: monospace; font-size: 0.7rem; overflow-y: auto; background: rgba(0,0,0,0.4);">
+           <p class="text-dim">Sentinel is watching for legal terms...</p>
+        </div>
+        <div class="lens-controls" style="display: flex; gap: 10px; background: rgba(15, 23, 42, 0.95);">
+           <button id="scout-capture-now" class="btn-secondary" style="flex: 1;"><i data-lucide="zap"></i> HARVEST NOW</button>
+           <button id="scout-done" class="btn-primary" style="flex: 2;">
+             <i data-lucide="shield-check"></i> FINISH & AUDIT
+           </button>
+        </div>
+    </div>
+
+    <!-- History Overlay -->
+    <div id="history-overlay" class="overlay">
+       <div class="history-header container" style="display: flex; justify-content: space-between; padding-top: 2rem;"><h2 style="margin: 0;">Audit History</h2><button id="close-history" class="icon-btn"><i data-lucide="x"></i></button></div>
+       <div id="history-list" class="container" style="margin-top: 2rem;"></div>
+    </div>
+
+  </div>
+    <!-- Voice Mode Overlay -->
+    <div id="voice-mode-overlay" class="overlay">
+       <div class="voice-mode-header container">
+         <button id="close-voice-mode" class="icon-btn"><i data-lucide="x"></i></button>
+       </div>
+       <div class="voice-mode-body container">
+         <div class="voice-avatar">
+           <div class="avatar-ring"></div>
+           <div class="avatar-ring"></div>
+           <div class="avatar-inner">
+             <i data-lucide="bot" style="width: 40px; height: 40px; color: var(--primary);"></i>
+           </div>
+         </div>
+         <h2 id="voice-status-text">Connecting...</h2>
+         <p id="voice-transcript-preview" class="text-dim">I'm listening...</p>
+         
+         <div class="voice-waveform">
+           <div class="wave-bar"></div>
+           <div class="wave-bar"></div>
+           <div class="wave-bar"></div>
+           <div class="wave-bar"></div>
+           <div class="wave-bar"></div>
+           <div class="wave-bar"></div>
+           <div class="wave-bar"></div>
+           <div class="wave-bar"></div>
+         </div>
+       </div>
+       <div class="voice-mode-footer container">
+         <button id="end-call-btn" class="end-call-btn">
+           <i data-lucide="phone-off"></i>
+         </button>
+       </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
