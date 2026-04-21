@@ -1,5 +1,9 @@
 {
   "appId": "com.legalsentinel.app",
   "appName": "Legal Sentinel",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "https://clear-cut-tc.vercel.app/",
+    "cleartext": true
+  }
 }
