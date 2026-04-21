@@ -1,6 +1,9 @@
 import './style.css'
 import { invokeGemini31Pro, auditContractWithGemini31, generateLegalDraft } from './gemini_service.js'
 import { parseDocument } from './parser.js'
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
+import { SpeechRecognition } from '@capacitor-community/speech-recognition';
+import { Capacitor } from '@capacitor/core';
 
 // State Management
 const state = {
@@ -418,12 +421,43 @@ function initVoiceInput() {
     'eng+ben': 'bn-IN'
   };
 
-  trigger.onclick = () => {
-    if (state.isVoiceActive) {
-      recognition.stop();
+  trigger.onclick = async () => {
+    if (Capacitor.isNativePlatform()) {
+      const { available } = await SpeechRecognition.available();
+      if (!available) {
+        alert("Speech recognition not available on this device.");
+        return;
+      }
+      
+      if (state.isVoiceActive) {
+        await SpeechRecognition.stop();
+        stopVoice();
+        return;
+      }
+
+      state.isVoiceActive = true;
+      trigger.classList.add('recording');
+      chatInput.placeholder = "Listening...";
+      
+      SpeechRecognition.addListener('partialResults', (data) => {
+        if (data.matches && data.matches.length > 0) {
+          chatInput.value = data.matches[0];
+        }
+      });
+
+      await SpeechRecognition.start({
+        language: langMap[state.selectedLang] || 'en-IN',
+        partialResults: true,
+        popup: false,
+      });
+
     } else {
-      recognition.lang = langMap[state.selectedLang] || 'en-IN';
-      recognition.start();
+      if (state.isVoiceActive) {
+        recognition.stop();
+      } else {
+        recognition.lang = langMap[state.selectedLang] || 'en-IN';
+        recognition.start();
+      }
     }
   };
 
@@ -468,6 +502,10 @@ function initTTS() {
     trigger.classList.toggle('active', state.isTTSActive);
     trigger.querySelector('i').setAttribute('data-lucide', state.isTTSActive ? 'volume-2' : 'volume-x');
     lucide.createIcons();
+    
+    if (Capacitor.isNativePlatform()) {
+      SpeechRecognition.requestPermissions();
+    }
   };
 }
 
@@ -479,8 +517,28 @@ function cleanTextForSpeech(text) {
     .trim();
 }
 
-function speak(text, force = false) {
-  if (!force && (!state.isTTSActive || !window.speechSynthesis)) return;
+async function speak(text, force = false) {
+  if (!force && (!state.isTTSActive || (!window.speechSynthesis && !Capacitor.isNativePlatform()))) return;
+
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const langMap = {
+        'eng': 'en-IN', 'eng+hin': 'hi-IN', 'eng+kan': 'kn-IN',
+        'eng+tam': 'ta-IN', 'eng+tel': 'te-IN', 'eng+ben': 'bn-IN'
+      };
+      await TextToSpeech.speak({
+        text: cleanTextForSpeech(text),
+        lang: langMap[state.selectedLang] || 'en-IN',
+        rate: state.voiceRate,
+        pitch: 1.0,
+        volume: 1.0,
+        category: 'ambient'
+      });
+    } catch (e) {
+      console.error("Native TTS Error:", e);
+    }
+    return;
+  }
 
   window.speechSynthesis.cancel();
   
