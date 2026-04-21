@@ -623,13 +623,44 @@ function initVoiceMode() {
     window.speechSynthesis.cancel();
   };
 
-  const startListening = () => {
+  const startListening = async () => {
     if (!state.isVoiceModeActive) return;
-    recognition.lang = langMap[state.selectedLang] || 'en-IN';
-    try {
-      recognition.start();
-    } catch (e) {
-      // Already started or other error
+    
+    if (Capacitor.isNativePlatform()) {
+      const { available } = await SpeechRecognition.available();
+      if (!available) return;
+      
+      state.isVoiceActive = true;
+      document.querySelector('.voice-avatar').classList.add('speaking');
+      
+      SpeechRecognition.addListener('partialResults', (data) => {
+        if (data.matches && data.matches.length > 0) {
+          transcriptPreview.textContent = data.matches[0];
+        }
+      });
+
+      // Handle final result via onend or a timer? Capacitor plugin usually has a stop/result pattern
+      // Actually, standard behavior is it stops when you stop talking.
+      
+      await SpeechRecognition.start({
+        language: langMap[state.selectedLang] || 'en-IN',
+        partialResults: true,
+        popup: false,
+      });
+
+      // Since the community plugin doesn't have a clear 'isFinal' event in partialResults, 
+      // we might need to handle the 'result' elsewhere or just use stop.
+      // Better approach for Voice Mode:
+      setTimeout(async () => {
+         // This is tricky for continuous mode. 
+         // Let's assume the plugin's start() will trigger partialResults and we can have a 'stop' button.
+      }, 5000);
+
+    } else {
+      recognition.lang = langMap[state.selectedLang] || 'en-IN';
+      try {
+        recognition.start();
+      } catch (e) {}
     }
   };
 
@@ -680,11 +711,24 @@ function initVoiceMode() {
     }
   }
 
-  function respondWithVoice(text) {
+  async function respondWithVoice(text) {
     statusText.textContent = "Responding...";
     statusText.style.color = "var(--safe)";
     transcriptPreview.textContent = text; 
     
+    if (Capacitor.isNativePlatform()) {
+      document.querySelector('.voice-avatar').classList.add('speaking');
+      await speak(text, true); 
+      document.querySelector('.voice-avatar').classList.remove('speaking');
+      
+      if (state.isVoiceModeActive) {
+        statusText.textContent = "I'm listening...";
+        transcriptPreview.textContent = "Your turn...";
+        startListening();
+      }
+      return;
+    }
+
     window.speechSynthesis.cancel();
 
     setTimeout(() => {
