@@ -81,11 +81,6 @@
               <span class="card-title">Legal Chat</span>
               <span class="card-subtitle">Text-based legal inquiries</span>
             </a>
-            <a href="#voice" class="sentinel-card" style="border: 1px solid var(--safe-glow);">
-              <i data-lucide="phone" class="card-icon" style="color: var(--safe);"></i>
-              <span class="card-title">Voice Scout</span>
-              <span class="card-subtitle">Hands-free voice assistance</span>
-            </a>
           </div>
         </section>
 
@@ -196,53 +191,6 @@
           </div>
         </section>
 
-        <!-- VOICE ASSIST VIEW -->
-        <section id="voice" class="view">
-           <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 1rem;">
-             <!-- Speed Toggle -->
-             <button id="voice-speed-trigger" class="lang-selector-pill" style="border-color: var(--primary-glow);">
-                <i data-lucide="gauge" style="width: 14px; color: var(--primary);"></i>
-                <span id="speed-text">Normal</span>
-             </button>
-
-             <div class="lang-selector-pill" id="voice-lang-trigger">
-                <i data-lucide="languages" style="width: 14px; color: var(--primary);"></i>
-                <span class="active-lang-text">English</span>
-                <div class="glass-card lang-dropdown">
-                   <div class="lang-option active" data-lang="eng">English</div>
-                   <div class="lang-option" data-lang="hin">Hindi (हिन्दी)</div>
-                   <div class="lang-option" data-lang="kan">Kannada (ಕನ್ನಡ)</div>
-                   <div class="lang-option" data-lang="tam">Tamil (தமிழ்)</div>
-                   <div class="lang-option" data-lang="tel">Telugu (తెలుಗು)</div>
-                   <div class="lang-option" data-lang="ben">Bengali (বাংলা)</div>
-                </div>
-             </div>
-           </div>
-
-           <div class="hero-section" style="margin-bottom: 2rem;">
-             <h1 class="hero-title">Voice <span class="text-gradient">Assistant</span></h1>
-             <p class="hero-subtitle">Engage in a hands-free conversation with Legal Sentinel. Perfect for quick questions or while on the move.</p>
-           </div>
-           
-           <div class="sentinel-card" style="text-align: center; padding: 3rem 1.5rem;">
-              <div class="voice-avatar" style="margin: 0 auto 2rem;">
-                <div class="avatar-ring"></div>
-                <div class="avatar-inner" style="background: var(--safe-glow);">
-                  <i data-lucide="mic" style="width: 40px; height: 40px; color: var(--safe);"></i>
-                </div>
-              </div>
-              <button class="btn-primary" id="start-voice-assist" style="background: var(--safe); color: white;">
-                <i data-lucide="phone"></i> Start Voice Scout
-              </button>
-              
-              <button id="voice-diagnostic-btn" class="icon-btn" style="margin-top: 1rem; opacity: 0.6; font-size: 0.7rem; gap: 5px; width: auto; padding: 0 10px;">
-                <i data-lucide="volume-2" style="width: 12px;"></i> Test Audio
-              </button>
-
-              <p class="text-dim" style="margin-top: 1.5rem; font-size: 0.8rem;">Supports English, Hindi, Kannada, Tamil, Telugu, and Bengali</p>
-           </div>
-        </section>
-
         <!-- DRAFT VIEW -->
         <section id="draft" class="view">
           <h2 style="margin-bottom: 1rem;">Doc Generator</h2>
@@ -269,7 +217,6 @@
       <a href="#home" class="nav-item active"><i data-lucide="home"></i><span>Home</span></a>
       <a href="#audit" class="nav-item"><i data-lucide="scan"></i><span>Audit</span></a>
       <a href="#chat" class="nav-item"><i data-lucide="message-circle"></i><span>Chat</span></a>
-      <a href="#voice" class="nav-item"><i data-lucide="mic"></i><span>Voice</span></a>
       <a href="#draft" class="nav-item"><i data-lucide="file-text"></i><span>Draft</span></a>
     </nav>
 
@@ -330,39 +277,6 @@
     </div>
 
   </div>
-    <!-- Voice Mode Overlay -->
-    <div id="voice-mode-overlay" class="overlay">
-       <div class="voice-mode-header container">
-         <button id="close-voice-mode" class="icon-btn"><i data-lucide="x"></i></button>
-       </div>
-       <div class="voice-mode-body container">
-         <div class="voice-avatar">
-           <div class="avatar-ring"></div>
-           <div class="avatar-ring"></div>
-           <div class="avatar-inner">
-             <i data-lucide="bot" style="width: 40px; height: 40px; color: var(--primary);"></i>
-           </div>
-         </div>
-         <h2 id="voice-status-text">Connecting...</h2>
-         <p id="voice-transcript-preview" class="text-dim">I'm listening...</p>
-         
-         <div class="voice-waveform">
-           <div class="wave-bar"></div>
-           <div class="wave-bar"></div>
-           <div class="wave-bar"></div>
-           <div class="wave-bar"></div>
-           <div class="wave-bar"></div>
-           <div class="wave-bar"></div>
-           <div class="wave-bar"></div>
-           <div class="wave-bar"></div>
-         </div>
-       </div>
-       <div class="voice-mode-footer container">
-         <button id="end-call-btn" class="end-call-btn">
-           <i data-lucide="phone-off"></i>
-         </button>
-       </div>
-    </div>
 
     <script type="module" src="/src/main.js"></script>
 </body>
