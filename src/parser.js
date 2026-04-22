@@ -36,21 +36,31 @@ export async function extractTextFromDocx(file) {
 }
 
 /**
- * Performs OCR on images using the Tesseract.js v4+ recognize API.
+ * Performs OCR on images using the Tesseract.js v5+ API.
+ * Uses a more robust initialization pattern for mobile WebViews.
  */
 export async function extractTextFromImage(file, langs = 'eng', onProgress) {
+  if (!window.Tesseract) {
+    throw new Error("OCR Library (Tesseract) failed to load. Please check your internet connection.");
+  }
+
   try {
-    const { data: { text } } = await window.Tesseract.recognize(file, langs, {
+    // v5 simplified recognize with better error handling
+    const result = await window.Tesseract.recognize(file, langs, {
+      workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+      langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core.wasm.js',
       logger: m => {
         if (m.status === 'recognizing text' && onProgress) {
           onProgress(Math.round(m.progress * 100));
         }
       }
     });
-    return text;
+    
+    return result.data.text;
   } catch (err) {
     console.error("Tesseract OCR Error:", err);
-    throw new Error("OCR Engine failed to initialize. Ensure you have an internet connection.");
+    throw new Error(`OCR Fail: ${err.message || 'Initialization error'}. Try a clearer photo or check internet.`);
   }
 }
 
