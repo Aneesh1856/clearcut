@@ -8,20 +8,6 @@ if (typeof window !== 'undefined' && window.pdfjsLib) {
   window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 }
 
-// Singleton Tesseract Workers for different language packs
-const tesseractWorkers = {};
-
-export async function getTesseractWorker(langs = 'eng') {
-  if (tesseractWorkers[langs]) return tesseractWorkers[langs];
-  
-  console.log(`[Legal Sentinel] Initializing OCR Worker for: ${langs}...`);
-  const worker = await window.Tesseract.createWorker(langs, 1, {
-    logger: m => console.debug(m)
-  });
-  tesseractWorkers[langs] = worker;
-  return worker;
-}
-
 /**
  * Extracts raw text from a PDF file.
  */
@@ -50,15 +36,22 @@ export async function extractTextFromDocx(file) {
 }
 
 /**
- * Performs REAL-TIME OCR on images using a singleton worker.
- * Supports multiple languages (e.g., 'eng+hin').
+ * Performs OCR on images using the Tesseract.js v4+ recognize API.
  */
 export async function extractTextFromImage(file, langs = 'eng', onProgress) {
-  const worker = await getTesseractWorker(langs);
-  const { data: { text } } = await worker.recognize(file);
-  
-  if (onProgress) onProgress(100);
-  return text;
+  try {
+    const { data: { text } } = await window.Tesseract.recognize(file, langs, {
+      logger: m => {
+        if (m.status === 'recognizing text' && onProgress) {
+          onProgress(Math.round(m.progress * 100));
+        }
+      }
+    });
+    return text;
+  } catch (err) {
+    console.error("Tesseract OCR Error:", err);
+    throw new Error("OCR Engine failed to initialize. Ensure you have an internet connection.");
+  }
 }
 
 /**
