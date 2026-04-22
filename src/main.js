@@ -424,6 +424,13 @@ function initVoiceInput() {
 
   trigger.onclick = async () => {
     if (Capacitor.isNativePlatform()) {
+      // Explicitly request permissions first
+      const perm = await SpeechRecognition.requestPermissions();
+      if (perm.speechRecognition !== 'granted') {
+        alert("Microphone permission is required for voice input.");
+        return;
+      }
+
       const { available } = await SpeechRecognition.available();
       if (!available) {
         alert("Speech recognition not available on this device.");
@@ -670,6 +677,12 @@ function initVoiceMode() {
     if (!state.isVoiceModeActive) return;
     
     if (Capacitor.isNativePlatform()) {
+      const perm = await SpeechRecognition.requestPermissions();
+      if (perm.speechRecognition !== 'granted') {
+        alert("Microphone permission is required for Voice Scout.");
+        return;
+      }
+      
       const { available } = await SpeechRecognition.available();
       if (!available) return;
       
