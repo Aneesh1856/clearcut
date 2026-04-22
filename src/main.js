@@ -876,12 +876,19 @@ function initChat() {
   const initialReplayBtn = document.querySelector('.msg-bot .replay-btn');
 
   if (initialReplayBtn) {
-    initialReplayBtn.onclick = () => {
-      const text = initialReplayBtn.parentElement.querySelector('.msg-content').textContent;
-      const originalTTSState = state.isTTSActive;
-      state.isTTSActive = true;
-      speak(text);
-      state.isTTSActive = originalTTSState;
+    initialReplayBtn.onclick = async () => {
+      const icon = initialReplayBtn.querySelector('i');
+      if (state.isCurrentlySpeaking) {
+        await stopSpeaking();
+        icon.setAttribute('data-lucide', 'volume-2');
+      } else {
+        const text = initialReplayBtn.parentElement.querySelector('.msg-content').textContent;
+        icon.setAttribute('data-lucide', 'square');
+        lucide.createIcons();
+        await speak(text, true);
+        icon.setAttribute('data-lucide', 'volume-2');
+      }
+      lucide.createIcons();
     };
   }
 
