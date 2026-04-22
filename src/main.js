@@ -747,11 +747,13 @@ function initVoiceMode() {
            document.querySelector('.voice-avatar').classList.remove('speaking');
            if (state.isVoiceModeActive) {
              const finalTranscript = transcriptPreview.textContent;
-             if (finalTranscript && finalTranscript !== "I'm listening..." && finalTranscript !== "Your turn...") {
+             const isPlaceholder = finalTranscript === "I'm listening..." || finalTranscript === "Your turn..." || !finalTranscript.trim();
+             
+             if (!isPlaceholder) {
                processVoiceInput(finalTranscript);
              } else {
-               // Restart if nothing was heard
-               setTimeout(startListening, 500);
+               statusText.textContent = "Listening...";
+               setTimeout(startListening, 1000);
              }
            }
         }
@@ -760,12 +762,19 @@ function initVoiceMode() {
       document.querySelector('.voice-avatar').classList.add('speaking');
       statusText.textContent = "I'm listening...";
       statusText.style.color = "var(--primary)";
+      transcriptPreview.textContent = "..."; // Clear with neutral placeholder
 
-      await SpeechRecognition.start({
-        language: langMap[state.selectedLang] || 'en-IN',
-        partialResults: true,
-        popup: false,
-      });
+      try {
+        await SpeechRecognition.start({
+          language: langMap[state.selectedLang] || 'en-IN',
+          partialResults: true,
+          popup: false,
+        });
+      } catch (e) {
+        console.error("Speech Start Error:", e);
+        statusText.textContent = "Speech engine error.";
+        setTimeout(startListening, 2000);
+      }
 
       // Since the community plugin doesn't have a clear 'isFinal' event in partialResults, 
       // we might need to handle the 'result' elsewhere or just use stop.
