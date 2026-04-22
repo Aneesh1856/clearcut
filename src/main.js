@@ -3,6 +3,8 @@ import { invokeGemini31Pro, auditContractWithGemini31, generateLegalDraft } from
 import { parseDocument } from './parser.js'
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { SpeechRecognition } from '@capacitor-community/speech-recognition';
+import { Camera } from '@capacitor/camera';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 
 // State Management
@@ -44,6 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initLens();
   initVoiceDiagnostic();
   
+  // Request all permissions on startup for APK
+  requestAllPermissions();
+
   // Platform Diagnostic for APK debugging
   const cap = window.Capacitor || Capacitor;
   if (cap.isNativePlatform()) {
@@ -52,6 +57,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   lucide.createIcons();
 });
+
+async function requestAllPermissions() {
+  const cap = window.Capacitor || Capacitor;
+  if (!cap.isNativePlatform()) return;
+
+  try {
+    // 1. Microphone (Speech Recognition)
+    await SpeechRecognition.requestPermissions();
+    // 2. Camera (Lens/Scout)
+    await Camera.requestPermissions();
+    // 3. Notifications (General UI/Background)
+    await PushNotifications.requestPermissions();
+  } catch (err) {
+    console.warn("One or more permissions were not requested:", err);
+  }
+}
 
 // Pre-load voices for better humanization
 window.speechSynthesis.onvoiceschanged = () => {
