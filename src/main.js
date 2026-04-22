@@ -709,6 +709,10 @@ function initVoiceMode() {
     const unlock = new SpeechSynthesisUtterance('');
     window.speechSynthesis.speak(unlock);
     
+    // Reset visual state
+    transcriptPreview.textContent = "";
+    transcriptPreview.placeholder = "Listening...";
+    
     startListening();
   };
 
@@ -746,23 +750,29 @@ function initVoiceMode() {
         if (data.status === 'stopped') {
            document.querySelector('.voice-avatar').classList.remove('speaking');
            if (state.isVoiceModeActive) {
-             const finalTranscript = transcriptPreview.textContent;
-             const isPlaceholder = finalTranscript === "I'm listening..." || finalTranscript === "Your turn..." || !finalTranscript.trim();
+             const finalTranscript = transcriptPreview.textContent.trim();
              
-             if (!isPlaceholder) {
+             // If we heard something, process it
+             if (finalTranscript && finalTranscript !== "..." && finalTranscript.length > 1) {
                processVoiceInput(finalTranscript);
              } else {
-               statusText.textContent = "Listening...";
-               setTimeout(startListening, 1000);
+               // Restart if nothing was heard
+               statusText.textContent = "I'm listening...";
+               setTimeout(() => { if(state.isVoiceModeActive) startListening(); }, 1000);
              }
            }
         }
       });
 
       document.querySelector('.voice-avatar').classList.add('speaking');
+      // Add manual trigger
+      document.querySelector('.voice-avatar').onclick = () => {
+        if (transcriptPreview.textContent.length > 1) processVoiceInput(transcriptPreview.textContent);
+      };
+
       statusText.textContent = "I'm listening...";
       statusText.style.color = "var(--primary)";
-      transcriptPreview.textContent = "..."; // Clear with neutral placeholder
+      transcriptPreview.textContent = ""; 
 
       try {
         await SpeechRecognition.start({
