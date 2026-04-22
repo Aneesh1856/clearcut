@@ -45,6 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initScout();
   initVoiceDiagnostic();
   
+  // Platform Diagnostic for APK debugging
+  if (Capacitor.isNativePlatform()) {
+    alert("SENTINEL NATIVE BRIDGE ACTIVE: " + Capacitor.getPlatform());
+  }
+
   lucide.createIcons();
 });
 
