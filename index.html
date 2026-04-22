@@ -306,39 +306,6 @@
       <div id="history-list" class="container" style="margin-top: 2rem;"></div>
     </div>
 
-    <!-- Consent Overlay -->
-    <div id="consent-overlay" class="overlay">
-       <div class="glass-card container" style="margin-top: 15vh; padding: 2rem; border: 1px solid var(--primary-glow); max-width: 90%; background: rgba(15, 23, 42, 0.95); position: relative; overflow: hidden;">
-          <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--primary-glow); filter: blur(60px); opacity: 0.2;"></div>
-          
-          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.5rem;">
-             <div style="background: rgba(56, 189, 248, 0.1); padding: 10px; border-radius: 12px; border: 1px solid var(--primary-glow);">
-                <i data-lucide="shield-alert" style="color: var(--primary); width: 24px; height: 24px;"></i>
-             </div>
-             <h2 style="margin: 0; font-size: 1.25rem; font-family: var(--font-hero);">Data Consent</h2>
-          </div>
-          
-          <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.5rem;">
-             To provide a high-precision legal audit, your document will be securely processed by <strong>Sentinel Core Engines</strong> (Gemini 3.1 Pro & Mistral).
-             <br><br>
-             By proceeding, you authorize:
-             <ul style="color: var(--text-secondary); font-size: 0.8rem; padding-left: 1.2rem; margin-top: 0.5rem; line-height: 1.8;">
-                <li>Automated extraction of legal clauses.</li>
-                <li>Cross-referencing with consumer protection laws.</li>
-                <li>Encryption-backed temporary data processing.</li>
-             </ul>
-             <span style="color: var(--primary); font-size: 0.7rem; display: block; margin-top: 1rem; font-weight: 700; letter-spacing: 0.5px; opacity: 0.8;">PROCESSED LOCALLY & SECURED VIA GOOGLE VERTEX AI</span>
-          </p>
-
-          <div style="display: flex; gap: 10px;">
-             <button id="consent-cancel" class="btn-secondary" style="flex: 1; font-size: 0.8rem;">Cancel</button>
-             <button id="consent-confirm" class="btn-primary" style="flex: 2; font-size: 0.8rem;">
-                <i data-lucide="shield-check"></i> I Consent & Audit
-             </button>
-          </div>
-       </div>
-    </div>
-
   </div>
 
   <script type="module" src="/src/main.js"></script>

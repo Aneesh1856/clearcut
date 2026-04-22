@@ -103,37 +103,7 @@ function initAudit() {
 
   scoutTrigger.addEventListener('click', startScout);
 
-  const requestConsent = () => {
-    return new Promise((resolve) => {
-      const overlay = document.querySelector('#consent-overlay');
-      const confirmBtn = document.querySelector('#consent-confirm');
-      const cancelBtn = document.querySelector('#consent-cancel');
-      
-      overlay.classList.add('active');
-      
-      const onConfirm = () => {
-        overlay.classList.remove('active');
-        confirmBtn.removeEventListener('click', onConfirm);
-        cancelBtn.removeEventListener('click', onCancel);
-        resolve(true);
-      };
-      
-      const onCancel = () => {
-        overlay.classList.remove('active');
-        confirmBtn.removeEventListener('click', onConfirm);
-        cancelBtn.removeEventListener('click', onCancel);
-        resolve(false);
-      };
-      
-      confirmBtn.addEventListener('click', onConfirm);
-      cancelBtn.addEventListener('click', onCancel);
-    });
-  };
-
   window.handleFile = async (file) => {
-    const hasConsent = await requestConsent();
-    if (!hasConsent) return;
-
     state.activeDocumentName = file.name || `Scan_${Date.now()}.png`;
     const isImage = file.type?.startsWith('image/') || file instanceof Blob;
 
