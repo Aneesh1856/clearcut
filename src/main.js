@@ -125,15 +125,6 @@ function initAudit() {
         preview.style.display = 'block';
         preview.innerHTML = `
           <div class="glass-card" style="display: flex; align-items: center; gap: 12px; border: 1px solid var(--safe-glow); padding: 0.75rem 1rem; border-radius: var(--radius-sm);">
-              <button class="btn-primary" id="start-voice-assist" style="background: var(--safe); color: white;">
-                <i data-lucide="phone"></i> Start Voice Scout
-              </button>
-              
-              <button id="voice-diagnostic-btn" class="icon-btn" style="margin-top: 1rem; opacity: 0.6; font-size: 0.7rem; gap: 5px; width: auto; padding: 0 10px;">
-                <i data-lucide="volume-2" style="width: 12px;"></i> Test Audio
-              </button>
-
-              <p class="text-dim" style="margin-top: 1.5rem; font-size: 0.8rem;">Supports English, Hindi, Kannada, Tamil, Telugu, and Bengali</p>
             <i data-lucide="file-check" style="color: var(--safe); width: 20px;"></i>
             <div style="flex: 1;">
               <div style="font-size: 0.75rem; font-weight: 900; color: var(--safe); letter-spacing: 1px;">DOCUMENT READY</div>
