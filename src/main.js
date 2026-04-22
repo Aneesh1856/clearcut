@@ -3,8 +3,6 @@ import { invokeGemini31Pro, auditContractWithGemini31, generateLegalDraft } from
 import { parseDocument } from './parser.js'
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { SpeechRecognition } from '@capacitor-community/speech-recognition';
-import { Camera } from '@capacitor/camera';
-import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 
 // State Management
@@ -46,9 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initLens();
   initVoiceDiagnostic();
   
-  // Request all permissions on startup for APK
-  requestAllPermissions();
-
   // Platform Diagnostic for APK debugging
   const cap = window.Capacitor || Capacitor;
   if (cap.isNativePlatform()) {
@@ -57,22 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   lucide.createIcons();
 });
-
-async function requestAllPermissions() {
-  const cap = window.Capacitor || Capacitor;
-  if (!cap.isNativePlatform()) return;
-
-  try {
-    // 1. Microphone (Speech Recognition)
-    await SpeechRecognition.requestPermissions();
-    // 2. Camera (Lens/Scout)
-    await Camera.requestPermissions();
-    // 3. Notifications (General UI/Background)
-    await PushNotifications.requestPermissions();
-  } catch (err) {
-    console.warn("One or more permissions were not requested:", err);
-  }
-}
 
 // Pre-load voices for better humanization
 window.speechSynthesis.onvoiceschanged = () => {
@@ -243,18 +222,37 @@ function stopLens() {
 
 async function captureSnapshot() {
   const video = document.querySelector('#lens-video');
+  const scanOverlay = document.querySelector('#scanning-overlay');
+  const ocrProgress = document.querySelector('#ocr-progress');
+  
   const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  // High-res capture for OCR accuracy
+  const scale = 1.5; 
+  canvas.width = video.videoWidth * scale;
+  canvas.height = video.videoHeight * scale;
+  
   const ctx = canvas.getContext('2d');
-    canvas.toBlob((blob) => {
-      stopLens();
-      window.handleFile(blob).then(() => {
-          // AUTO-AUDIT TRIGGER
-          const runBtn = document.querySelector('#run-audit');
-          if (runBtn) runBtn.click();
-      });
-    }, 'image/png');
+  // Legal-Grade OCR Preprocessing
+  ctx.filter = 'contrast(1.6) grayscale(1) brightness(1.05) sharpness(1.2)';
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  if (scanOverlay) {
+    scanOverlay.style.display = 'flex';
+    ocrProgress.textContent = "Analyzing document...";
+  }
+
+  canvas.toBlob((blob) => {
+    stopLens();
+    window.handleFile(blob).then(() => {
+        if (scanOverlay) scanOverlay.style.display = 'none';
+        // AUTO-AUDIT TRIGGER
+        const runBtn = document.querySelector('#run-audit');
+        if (runBtn) runBtn.click();
+    }).catch(err => {
+        if (scanOverlay) scanOverlay.style.display = 'none';
+        alert("Scan Failed: " + err.message);
+    });
+  }, 'image/png');
 }
 
 // 4. Sentinel Screen Scout (Real-Time Capture)
