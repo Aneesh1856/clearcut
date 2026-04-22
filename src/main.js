@@ -743,16 +743,23 @@ function initVoiceMode() {
 
       // Handle the final result when speech recognition stops
       SpeechRecognition.addListener('listeningState', (data) => {
-        if (data.status === 'stopped' && state.isVoiceModeActive) {
-           const finalTranscript = transcriptPreview.textContent;
-           if (finalTranscript && finalTranscript !== "I'm listening..." && finalTranscript !== "Your turn...") {
-             processVoiceInput(finalTranscript);
-           } else if (state.isVoiceModeActive) {
-             // Restart if nothing was heard
-             startListening();
+        if (data.status === 'stopped') {
+           document.querySelector('.voice-avatar').classList.remove('speaking');
+           if (state.isVoiceModeActive) {
+             const finalTranscript = transcriptPreview.textContent;
+             if (finalTranscript && finalTranscript !== "I'm listening..." && finalTranscript !== "Your turn...") {
+               processVoiceInput(finalTranscript);
+             } else {
+               // Restart if nothing was heard
+               setTimeout(startListening, 500);
+             }
            }
         }
       });
+
+      document.querySelector('.voice-avatar').classList.add('speaking');
+      statusText.textContent = "I'm listening...";
+      statusText.style.color = "var(--primary)";
 
       await SpeechRecognition.start({
         language: langMap[state.selectedLang] || 'en-IN',
@@ -810,9 +817,15 @@ function initVoiceMode() {
   async function processVoiceInput(text) {
     if (!text.trim()) return;
     
-    recognition.stop();
+    if (Capacitor.isNativePlatform()) {
+      await SpeechRecognition.stop();
+    } else if (recognition) {
+      recognition.stop();
+    }
+
     statusText.textContent = "Thinking...";
     statusText.style.color = "var(--warning)";
+    document.querySelector('.voice-avatar').classList.remove('speaking');
     
     try {
       const response = await invokeGemini31Pro(text, state.selectedLang);
