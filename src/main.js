@@ -65,11 +65,11 @@ function initRouter() {
   const handleRoute = () => {
     const hash = window.location.hash.replace('#', '') || 'home';
     state.activeView = hash;
-    
+
     document.querySelectorAll('.view').forEach(view => {
       view.classList.toggle('active', view.id === hash);
     });
-    
+
     document.querySelectorAll('.nav-item').forEach(nav => {
       nav.classList.toggle('active', nav.getAttribute('href') === `#${hash}`);
     });
@@ -92,7 +92,7 @@ function initAudit() {
   const fileInput = document.querySelector('#audit-file-input');
   const scanOverlay = document.querySelector('#scanning-overlay');
   const ocrProgress = document.querySelector('#ocr-progress');
-  
+
   if (!fileTrigger || !cameraTrigger || !scoutTrigger) return;
 
   fileTrigger.addEventListener('click', () => fileInput.click());
@@ -106,7 +106,7 @@ function initAudit() {
   window.handleFile = async (file) => {
     state.activeDocumentName = file.name || `Scan_${Date.now()}.png`;
     const isImage = file.type?.startsWith('image/') || file instanceof Blob;
-    
+
     if (isImage) {
       scanOverlay.style.display = 'flex';
       ocrProgress.textContent = "initializing...";
@@ -117,9 +117,9 @@ function initAudit() {
         ocrProgress.textContent = `Reading pixels... ${progress}%`;
       });
       state.activeDocumentText = text;
-      
+
       scanOverlay.style.display = 'none';
-      
+
       const preview = document.querySelector('#audit-file-preview');
       if (preview) {
         preview.style.display = 'block';
@@ -154,7 +154,7 @@ function initAudit() {
   runBtn.addEventListener('click', async () => {
     const text = textArea.value.trim() || state.activeDocumentText;
     if (!text || state.isScanning) return;
-    
+
     runBtn.disabled = true;
     runBtn.innerHTML = `<i class="pulse" data-lucide="loader-2"></i> <span class="typing-dots">Sentinel is auditing risk</span>`;
     lucide.createIcons();
@@ -202,9 +202,9 @@ function initLens() {
 async function startLens() {
   const video = document.querySelector('#lens-video');
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, 
-      audio: false 
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
     });
     state.lensStream = stream;
     video.srcObject = stream;
@@ -226,18 +226,18 @@ async function captureSnapshot() {
   const video = document.querySelector('#lens-video');
   const scanOverlay = document.querySelector('#scanning-overlay');
   const ocrProgress = document.querySelector('#ocr-progress');
-  
+
   const canvas = document.createElement('canvas');
   // High-res capture for OCR accuracy
-  const scale = 1.5; 
+  const scale = 1.5;
   canvas.width = video.videoWidth * scale;
   canvas.height = video.videoHeight * scale;
-  
+
   const ctx = canvas.getContext('2d');
   // Legal-Grade OCR Preprocessing
   ctx.filter = 'contrast(1.6) grayscale(1) brightness(1.05) sharpness(1.2)';
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
+
   if (scanOverlay) {
     scanOverlay.style.display = 'flex';
     ocrProgress.textContent = "Analyzing document...";
@@ -246,23 +246,23 @@ async function captureSnapshot() {
   canvas.toBlob((blob) => {
     stopLens();
     window.handleFile(blob).then(() => {
-        if (scanOverlay) scanOverlay.style.display = 'none';
-        // AUTO-AUDIT TRIGGER
-        const runBtn = document.querySelector('#run-audit');
-        if (runBtn) runBtn.click();
+      if (scanOverlay) scanOverlay.style.display = 'none';
+      // AUTO-AUDIT TRIGGER
+      const runBtn = document.querySelector('#run-audit');
+      if (runBtn) runBtn.click();
     }).catch(err => {
-        if (scanOverlay) scanOverlay.style.display = 'none';
-        alert("Scan Failed: " + err.message);
+      if (scanOverlay) scanOverlay.style.display = 'none';
+      alert("Scan Failed: " + err.message);
     });
   }, 'image/png');
 }
 
-// 4. Sentinel Screen Scout (Real-Time Capture)
+// 4. Sentinel Chrome Extension (Real-Time Capture)
 function initScout() {
   const stopBtn = document.querySelector('#stop-scout');
   const manualBtn = document.querySelector('#scout-capture-now');
   const doneBtn = document.querySelector('#scout-done');
-  
+
   if (stopBtn) stopBtn.onclick = finishScout;
   if (manualBtn) manualBtn.onclick = () => scoutSamplingLoop(true);
   if (doneBtn) doneBtn.onclick = finishScout;
@@ -276,15 +276,15 @@ async function startScout() {
   try {
     // NATIVE BRIDGE CHECK (For APK build)
     if (window.SentinelBridge) {
-        window.SentinelBridge.postMessage('startScout');
-        overlay.classList.add('active');
-        state.scoutBuffer.clear();
-        feed.innerHTML = `<p class="text-dim">Sentinel Native Vision Active. Scouring other apps...</p>`;
-        return; 
+      window.SentinelBridge.postMessage('startScout');
+      overlay.classList.add('active');
+      state.scoutBuffer.clear();
+      feed.innerHTML = `<p class="text-dim">Sentinel Native Vision Active. Scouring other apps...</p>`;
+      return;
     }
 
-    const stream = await navigator.mediaDevices.getDisplayMedia({ 
-      video: { cursor: 'always' } 
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { cursor: 'always' }
     });
     state.scoutStream = stream;
     video.srcObject = stream;
@@ -306,16 +306,16 @@ async function startScout() {
 async function scoutSamplingLoop(isManual = false) {
   const video = document.querySelector('#scout-video');
   const feed = document.querySelector('#scout-text-stream');
-  
-  if (!video || video.videoWidth < 100) return; 
-  if (state.isOCRPending && !isManual) return; 
+
+  if (!video || video.videoWidth < 100) return;
+  if (state.isOCRPending && !isManual) return;
 
   const canvas = document.createElement('canvas');
   // Scale UP for better accuracy on small screen text
   const scale = 1.2;
   canvas.width = video.videoWidth * scale;
   canvas.height = video.videoHeight * scale;
-  
+
   const ctx = canvas.getContext('2d');
   ctx.filter = 'contrast(1.4) grayscale(1) brightness(1.1)';
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -325,7 +325,7 @@ async function scoutSamplingLoop(isManual = false) {
     try {
       const text = await parseDocument(blob, state.selectedLang);
       const cleanedText = text.trim();
-      
+
       if (cleanedText.length > 25 && !state.scoutBuffer.has(cleanedText)) {
         state.scoutBuffer.add(cleanedText);
         const item = document.createElement('div');
@@ -333,7 +333,7 @@ async function scoutSamplingLoop(isManual = false) {
         item.innerHTML = `<span style="color:var(--safe)">[SCANNED]</span> ${cleanedText.substring(0, 150)}...`;
         feed.prepend(item);
         if (feed.children.length > 20) feed.lastChild.remove();
-        
+
         // Visual ping
         feed.parentElement.style.borderColor = "var(--primary)";
         setTimeout(() => feed.parentElement.style.borderColor = "transparent", 300);
@@ -349,7 +349,7 @@ async function scoutSamplingLoop(isManual = false) {
 function finishScout() {
   const manualBtn = document.querySelector('#scout-capture-now');
   clearInterval(state.scoutInterval);
-  
+
   if (state.scoutStream) {
     state.scoutStream.getTracks().forEach(track => track.stop());
     state.scoutStream = null;
@@ -359,21 +359,21 @@ function finishScout() {
   const fullText = Array.from(state.scoutBuffer).join('\n\n');
   if (fullText.length > 50) {
     state.activeDocumentText = fullText;
-    state.activeDocumentName = "Screen Scout Capture";
+    state.activeDocumentName = "Chrome Extension Capture";
     const scoutLabel = document.querySelector('#scout-trigger .media-label');
     if (scoutLabel) scoutLabel.innerHTML = `<i data-lucide="check" style="width:14px; color:var(--safe);"></i> Scout Ready`;
     lucide.createIcons();
-    
+
     // Switch view and trigger audit automatically
     window.location.hash = '#audit';
     setTimeout(() => {
-        const runBtn = document.querySelector('#run-audit');
-        if (runBtn) {
-            runBtn.click();
-            // Clear the preview to show the audit progress
-            const preview = document.querySelector('#audit-file-preview');
-            if (preview) preview.style.display = 'none';
-        }
+      const runBtn = document.querySelector('#run-audit');
+      if (runBtn) {
+        runBtn.click();
+        // Clear the preview to show the audit progress
+        const preview = document.querySelector('#audit-file-preview');
+        if (preview) preview.style.display = 'none';
+      }
     }, 300);
 
   } else {
@@ -392,9 +392,9 @@ function initLangSelector() {
   const updateGlobalLang = (lang, display) => {
     state.selectedLang = (lang === 'eng') ? 'eng' : `eng+${lang}`;
     labelTexts.forEach(label => label.textContent = display);
-    
+
     allOptions.forEach(opt => {
-        opt.classList.toggle('active', opt.dataset.lang === lang);
+      opt.classList.toggle('active', opt.dataset.lang === lang);
     });
   };
 
@@ -403,7 +403,7 @@ function initLangSelector() {
     trigger.onclick = (e) => {
       e.stopPropagation();
       document.querySelectorAll('.lang-selector-pill').forEach(t => {
-          if (t !== trigger) t.classList.remove('active');
+        if (t !== trigger) t.classList.remove('active');
       });
       trigger.classList.toggle('active');
     };
@@ -426,7 +426,7 @@ function initLangSelector() {
 function initVoiceInput() {
   const trigger = document.querySelector('#voice-trigger');
   const chatInput = document.querySelector('.chat-input');
-  
+
   if (!trigger) return;
 
   const BrowserSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -465,37 +465,37 @@ function initVoiceInput() {
           alert("Speech Recognition engine not available on this device.");
           return;
         }
-      
-      if (state.isVoiceActive) {
-        await SpeechRecognition.stop();
-        stopVoice();
-        return;
-      }
 
-      state.isVoiceActive = true;
-      trigger.classList.add('recording');
-      chatInput.placeholder = "Listening...";
-      
-      // Clear existing listeners to prevent duplicates
-      await SpeechRecognition.removeAllListeners();
-
-      SpeechRecognition.addListener('partialResults', (data) => {
-        if (data.matches && data.matches.length > 0) {
-          chatInput.value = data.matches[0];
-        }
-      });
-
-      SpeechRecognition.addListener('listeningState', (data) => {
-        if (data.status === 'stopped') {
+        if (state.isVoiceActive) {
+          await SpeechRecognition.stop();
           stopVoice();
+          return;
         }
-      });
 
-      await SpeechRecognition.start({
-        language: langMap[state.selectedLang] || 'en-IN',
-        partialResults: true,
-        popup: false,
-      });
+        state.isVoiceActive = true;
+        trigger.classList.add('recording');
+        chatInput.placeholder = "Listening...";
+
+        // Clear existing listeners to prevent duplicates
+        await SpeechRecognition.removeAllListeners();
+
+        SpeechRecognition.addListener('partialResults', (data) => {
+          if (data.matches && data.matches.length > 0) {
+            chatInput.value = data.matches[0];
+          }
+        });
+
+        SpeechRecognition.addListener('listeningState', (data) => {
+          if (data.status === 'stopped') {
+            stopVoice();
+          }
+        });
+
+        await SpeechRecognition.start({
+          language: langMap[state.selectedLang] || 'en-IN',
+          partialResults: true,
+          popup: false,
+        });
 
       } catch (err) {
         console.error("Native Speech Error:", err);
@@ -524,7 +524,7 @@ function initVoiceInput() {
     recognition.onresult = (e) => {
       let transcript = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
-          transcript += e.results[i][0].transcript;
+        transcript += e.results[i][0].transcript;
       }
       chatInput.value = transcript;
     };
@@ -556,7 +556,7 @@ function initTTS() {
     trigger.classList.toggle('active', state.isTTSActive);
     trigger.querySelector('i').setAttribute('data-lucide', state.isTTSActive ? 'volume-2' : 'volume-x');
     lucide.createIcons();
-    
+
     if (Capacitor.isNativePlatform()) {
       SpeechRecognition.requestPermissions();
     }
@@ -622,7 +622,7 @@ function speak(text, force = false) {
     }
 
     window.speechSynthesis.cancel();
-    
+
     setTimeout(() => {
       const cleanedText = cleanTextForSpeech(text);
       const langMap = {
@@ -630,7 +630,7 @@ function speak(text, force = false) {
         'eng+tam': 'ta-IN', 'eng+tel': 'te-IN', 'eng+ben': 'bn-IN'
       };
       const targetLang = langMap[state.selectedLang] || 'en-IN';
-    
+
       const chunks = cleanedText.match(/[^.!?]{1,200}[.!?]|[^.!?]{1,200}/g) || [cleanedText];
       state.utteranceQueue = [];
 
@@ -639,11 +639,11 @@ function speak(text, force = false) {
         utterance.lang = targetLang;
         utterance.rate = state.voiceRate;
         utterance.pitch = 1.05;
-    
+
         const voices = window.speechSynthesis.getVoices();
         const preferredVoice = voices.find(v => v.lang.startsWith(targetLang.split('-')[0]) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium')));
         if (preferredVoice) utterance.voice = preferredVoice;
-    
+
         if (index === chunks.length - 1) {
           utterance.onend = () => {
             state.isCurrentlySpeaking = false;
@@ -658,7 +658,7 @@ function speak(text, force = false) {
         state.utteranceQueue.push(utterance);
         window.speechSynthesis.speak(utterance);
       });
-      
+
       // Safety timeout if chunks is empty or speech fails to start
       if (chunks.length === 0) {
         state.isCurrentlySpeaking = false;
@@ -681,7 +681,7 @@ function initVoiceMode() {
 
   const BrowserSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = BrowserSpeechRecognition ? new BrowserSpeechRecognition() : null;
-  
+
   if (recognition) {
     recognition.continuous = false;
     recognition.interimResults = true;
@@ -704,15 +704,15 @@ function initVoiceMode() {
     state.isVoiceModeActive = true;
     overlay.classList.add('active');
     statusText.textContent = "Listening...";
-    
+
     // Unlock Speech Synthesis (Browser Requirement)
     const unlock = new SpeechSynthesisUtterance('');
     window.speechSynthesis.speak(unlock);
-    
+
     // Reset visual state
     transcriptPreview.textContent = "";
     transcriptPreview.placeholder = "Listening...";
-    
+
     startListening();
   };
 
@@ -725,17 +725,17 @@ function initVoiceMode() {
 
   const startListening = async () => {
     if (!state.isVoiceModeActive) return;
-    
+
     if (Capacitor.isNativePlatform()) {
       const perm = await SpeechRecognition.requestPermissions();
       if (perm.speechRecognition !== 'granted') {
         alert("Microphone permission is required for Voice Scout.");
         return;
       }
-      
+
       const { available } = await SpeechRecognition.available();
       if (!available) return;
-      
+
       // Clear existing listeners
       await SpeechRecognition.removeAllListeners();
 
@@ -748,19 +748,19 @@ function initVoiceMode() {
       // Handle the final result when speech recognition stops
       SpeechRecognition.addListener('listeningState', (data) => {
         if (data.status === 'stopped') {
-           document.querySelector('.voice-avatar').classList.remove('speaking');
-           if (state.isVoiceModeActive) {
-             const finalTranscript = transcriptPreview.textContent.trim();
-             
-             // If we heard something, process it
-             if (finalTranscript && finalTranscript !== "..." && finalTranscript.length > 1) {
-               processVoiceInput(finalTranscript);
-             } else {
-               // Restart if nothing was heard
-               statusText.textContent = "I'm listening...";
-               setTimeout(() => { if(state.isVoiceModeActive) startListening(); }, 1000);
-             }
-           }
+          document.querySelector('.voice-avatar').classList.remove('speaking');
+          if (state.isVoiceModeActive) {
+            const finalTranscript = transcriptPreview.textContent.trim();
+
+            // If we heard something, process it
+            if (finalTranscript && finalTranscript !== "..." && finalTranscript.length > 1) {
+              processVoiceInput(finalTranscript);
+            } else {
+              // Restart if nothing was heard
+              statusText.textContent = "I'm listening...";
+              setTimeout(() => { if (state.isVoiceModeActive) startListening(); }, 1000);
+            }
+          }
         }
       });
 
@@ -772,7 +772,7 @@ function initVoiceMode() {
 
       statusText.textContent = "I'm listening...";
       statusText.style.color = "var(--primary)";
-      transcriptPreview.textContent = ""; 
+      transcriptPreview.textContent = "";
 
       try {
         await SpeechRecognition.start({
@@ -790,15 +790,15 @@ function initVoiceMode() {
       // we might need to handle the 'result' elsewhere or just use stop.
       // Better approach for Voice Mode:
       setTimeout(async () => {
-         // This is tricky for continuous mode. 
-         // Let's assume the plugin's start() will trigger partialResults and we can have a 'stop' button.
+        // This is tricky for continuous mode. 
+        // Let's assume the plugin's start() will trigger partialResults and we can have a 'stop' button.
       }, 5000);
 
     } else {
       recognition.lang = langMap[state.selectedLang] || 'en-IN';
       try {
         recognition.start();
-      } catch (e) {}
+      } catch (e) { }
     }
   };
 
@@ -835,7 +835,7 @@ function initVoiceMode() {
 
   async function processVoiceInput(text) {
     if (!text.trim()) return;
-    
+
     if (Capacitor.isNativePlatform()) {
       await SpeechRecognition.stop();
     } else if (recognition) {
@@ -845,7 +845,7 @@ function initVoiceMode() {
     statusText.textContent = "Thinking...";
     statusText.style.color = "var(--warning)";
     document.querySelector('.voice-avatar').classList.remove('speaking');
-    
+
     try {
       const response = await invokeGemini31Pro(text, state.selectedLang);
       respondWithVoice(response);
@@ -858,13 +858,13 @@ function initVoiceMode() {
   async function respondWithVoice(text) {
     statusText.textContent = "Responding...";
     statusText.style.color = "var(--safe)";
-    transcriptPreview.textContent = text; 
-    
+    transcriptPreview.textContent = text;
+
     if (Capacitor.isNativePlatform()) {
       document.querySelector('.voice-avatar').classList.add('speaking');
-      await speak(text, true); 
+      await speak(text, true);
       document.querySelector('.voice-avatar').classList.remove('speaking');
-      
+
       if (state.isVoiceModeActive) {
         statusText.textContent = "I'm listening...";
         transcriptPreview.textContent = "Your turn...";
@@ -879,7 +879,7 @@ function initVoiceMode() {
       const cleanedText = cleanTextForSpeech(text);
       const targetLang = langMap[state.selectedLang] || 'en-IN';
       const chunks = cleanedText.match(/[^.!?]{1,200}[.!?]|[^.!?]{1,200}/g) || [cleanedText];
-  
+
       state.utteranceQueue = [];
 
       chunks.forEach((chunk, index) => {
@@ -887,15 +887,15 @@ function initVoiceMode() {
         utterance.lang = targetLang;
         utterance.rate = state.voiceRate;
         utterance.pitch = 1.05;
-  
+
         const voices = window.speechSynthesis.getVoices();
         const preferredVoice = voices.find(v => v.lang.startsWith(targetLang.split('-')[0]) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium')));
         if (preferredVoice) utterance.voice = preferredVoice;
-        
+
         if (index === 0) {
           utterance.onstart = () => document.querySelector('.voice-avatar').classList.add('speaking');
         }
-  
+
         if (index === chunks.length - 1) {
           utterance.onend = () => {
             document.querySelector('.voice-avatar').classList.remove('speaking');
@@ -906,12 +906,12 @@ function initVoiceMode() {
             }
           };
         }
-        
+
         state.utteranceQueue.push(utterance);
         window.speechSynthesis.speak(utterance);
       });
     }, 50);
-    
+
     // Also add to chat history for record
     addMessage('bot', text);
   }
@@ -928,7 +928,7 @@ function initSpeedControl() {
     { label: 'Normal', rate: 0.95 },
     { label: 'Fast', rate: 1.25 }
   ];
-  
+
   let currentIdx = 1; // Start at Normal
 
   trigger.onclick = () => {
@@ -936,7 +936,7 @@ function initSpeedControl() {
     const selected = speeds[currentIdx];
     state.voiceRate = selected.rate;
     speedText.textContent = selected.label;
-    
+
     // Visual feedback
     trigger.style.background = currentIdx === 1 ? 'transparent' : 'rgba(56, 189, 248, 0.1)';
   };
@@ -945,38 +945,38 @@ function initSpeedControl() {
 function initVoiceDiagnostic() {
   const btn = document.querySelector('#voice-diagnostic-btn');
   if (!btn) return;
-  
+
   btn.onclick = () => {
     if (!window.speechSynthesis) {
-        alert("Your browser does not support Speech Synthesis.");
-        return;
+      alert("Your browser does not support Speech Synthesis.");
+      return;
     }
-    
+
     // Un-mute/Unlock
     window.speechSynthesis.cancel();
-    
+
     const test = new SpeechSynthesisUtterance("Testing Legal Sentinel audio. Can you hear me?");
     test.lang = 'en-IN';
     test.rate = 1.0;
-    
+
     test.onstart = () => {
-        btn.innerHTML = '<i data-lucide="loader" class="spin" style="width: 12px;"></i> Playing...';
-        lucide.createIcons();
+      btn.innerHTML = '<i data-lucide="loader" class="spin" style="width: 12px;"></i> Playing...';
+      lucide.createIcons();
     };
-    
+
     test.onend = () => {
-        btn.innerHTML = '<i data-lucide="check" style="width: 12px;"></i> Works!';
+      btn.innerHTML = '<i data-lucide="check" style="width: 12px;"></i> Works!';
+      lucide.createIcons();
+      setTimeout(() => {
+        btn.innerHTML = '<i data-lucide="volume-2" style="width: 12px;"></i> Test Audio';
         lucide.createIcons();
-        setTimeout(() => {
-            btn.innerHTML = '<i data-lucide="volume-2" style="width: 12px;"></i> Test Audio';
-            lucide.createIcons();
-        }, 2000);
+      }, 2000);
     };
-    
+
     test.onerror = (e) => {
-        console.error("Speech Error:", e);
-        btn.innerHTML = '<i data-lucide="x-circle" style="width: 12px;"></i> Failed';
-        lucide.createIcons();
+      console.error("Speech Error:", e);
+      btn.innerHTML = '<i data-lucide="x-circle" style="width: 12px;"></i> Failed';
+      lucide.createIcons();
     };
 
     window.speechSynthesis.speak(test);
@@ -1025,8 +1025,8 @@ function initChat() {
       lucide.createIcons();
 
       document.querySelector('#remove-attachment').onclick = () => {
-          state.pendingChatDoc = null;
-          attachmentPreview.style.display = 'none';
+        state.pendingChatDoc = null;
+        attachmentPreview.style.display = 'none';
       };
 
       const text = await parseDocument(file, state.selectedLang);
@@ -1040,10 +1040,10 @@ function initChat() {
 
     if (state.pendingChatDoc) addFileMessage(state.pendingChatDoc.name);
     if (text) addMessage('user', text);
-    
+
     const userTextCopy = text;
     const pendingDocCopy = state.pendingChatDoc;
-    
+
     chatInput.value = '';
     attachmentPreview.style.display = 'none';
     state.pendingChatDoc = null;
@@ -1051,21 +1051,21 @@ function initChat() {
     const botMsg = addMessage('bot', '');
     const contentDiv = botMsg.querySelector('.msg-content');
     if (contentDiv) contentDiv.innerHTML = `<span class="typing-dots">Sentinel is typing</span>`;
-    
+
     try {
       let prompt = userTextCopy;
       if (pendingDocCopy) {
         prompt = `[FILE: ${pendingDocCopy.name}]\nContent: ${pendingDocCopy.text.substring(0, 3000)}\n\nQuestion: ${userTextCopy}`;
       }
       const response = await invokeGemini31Pro(prompt, state.selectedLang);
-      
+
       const contentDiv = botMsg.querySelector('.msg-content');
       if (contentDiv) {
         contentDiv.textContent = response;
       } else {
         botMsg.textContent = response;
       }
-      
+
       speak(response);
       saveToHistory('Chat', userTextCopy || (pendingDocCopy ? pendingDocCopy.name : "Chat Message"));
     } catch (e) {
@@ -1076,14 +1076,14 @@ function initChat() {
   };
 
   chatBtn.addEventListener('click', sendMessage);
-  chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
+  chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 }
 
 function addMessage(sender, text) {
   const container = document.querySelector('#chat-messages');
   const msg = document.createElement('div');
   msg.className = `msg msg-${sender}`;
-  
+
   if (sender === 'bot') {
     msg.innerHTML = `
       <div class="msg-content">${text}</div>
@@ -1143,7 +1143,7 @@ function initDraft() {
 
   draftBtn.addEventListener('click', async () => {
     if (state.isScanning) return;
-    
+
     const type = docType.value;
     const details = docDetails.value.trim();
     if (!details) {
@@ -1232,31 +1232,31 @@ function renderHistoryList(container) {
 
 // 10. Native APK Bridge Receiver
 window.receiveScoutFrame = async (base64Data) => {
-    const feed = document.querySelector('#scout-text-stream');
-    if (!feed) return;
+  const feed = document.querySelector('#scout-text-stream');
+  if (!feed) return;
 
-    try {
-        state.isOCRPending = true;
-        // Convert base64 to File for existing parser
-        const res = await fetch(`data:image/png;base64,${base64Data}`);
-        const blob = await res.blob();
-        const file = new File([blob], "scout_frame.png", { type: "image/png" });
+  try {
+    state.isOCRPending = true;
+    // Convert base64 to File for existing parser
+    const res = await fetch(`data:image/png;base64,${base64Data}`);
+    const blob = await res.blob();
+    const file = new File([blob], "scout_frame.png", { type: "image/png" });
 
-        const text = await parseDocument(file, state.selectedLang);
-        
-        if (text && text.trim().length > 10) {
-            const cleanText = text.trim();
-            if (!state.scoutBuffer.has(cleanText)) {
-                state.scoutBuffer.add(cleanText);
-                const item = document.createElement('div');
-                item.className = 'feed-item';
-                item.textContent = cleanText.substring(0, 150) + "...";
-                feed.prepend(item);
-            }
-        }
-    } catch (err) {
-        console.error("Native Frame Error:", err);
-    } finally {
-        state.isOCRPending = false;
+    const text = await parseDocument(file, state.selectedLang);
+
+    if (text && text.trim().length > 10) {
+      const cleanText = text.trim();
+      if (!state.scoutBuffer.has(cleanText)) {
+        state.scoutBuffer.add(cleanText);
+        const item = document.createElement('div');
+        item.className = 'feed-item';
+        item.textContent = cleanText.substring(0, 150) + "...";
+        feed.prepend(item);
+      }
     }
+  } catch (err) {
+    console.error("Native Frame Error:", err);
+  } finally {
+    state.isOCRPending = false;
+  }
 };
