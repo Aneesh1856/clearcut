@@ -58,11 +58,17 @@
           </div>
 
           <div class="home-layout">
-            <a href="https://github.com/Aneesh1856/clearcut" target="_blank" class="sentinel-card scout-glow" style="position: relative; overflow: hidden;">
-              <div class="tag" style="position: absolute; top: 12px; right: 12px; margin: 0; background: rgba(56, 189, 248, 0.1); color: var(--primary); font-size: 0.55rem; padding: 2px 6px;">EXT-V1</div>
-              <i data-lucide="chrome" class="card-icon" style="color: var(--accent);"></i>
-              <span class="card-title">Chrome Extension</span>
-              <span class="card-subtitle">One-click audit for any website</span>
+            <a href="#audit" class="sentinel-card scout-glow" style="position: relative; overflow: hidden;">
+              <div class="tag" style="position: absolute; top: 12px; right: 12px; margin: 0; background: rgba(56, 189, 248, 0.1); color: var(--primary); font-size: 0.55rem; padding: 2px 6px;">MISTRAL 7B</div>
+              <i data-lucide="eye" class="card-icon" style="color: var(--accent);"></i>
+              <span class="card-title">Screen Scout</span>
+              <span class="card-subtitle">Real-time harvest & terms parsing</span>
+            </a>
+            <a href="#audit" class="sentinel-card" style="position: relative; overflow: hidden;">
+              <div class="tag" style="position: absolute; top: 12px; right: 12px; margin: 0; background: rgba(244, 63, 94, 0.1); color: var(--accent); font-size: 0.55rem; padding: 2px 6px;">LENS CORE</div>
+              <i data-lucide="camera" class="card-icon"></i>
+              <span class="card-title">Live Lens</span>
+              <span class="card-subtitle">Fast scan paper documents & notices</span>
             </a>
             <a href="#audit" class="sentinel-card" style="position: relative; overflow: hidden;">
               <div class="tag" style="position: absolute; top: 12px; right: 12px; margin: 0; background: var(--primary-glow); color: var(--primary); font-size: 0.55rem; padding: 2px 6px;">GEMINI 3.1 PRO</div>
@@ -108,15 +114,23 @@
               <input type="file" id="audit-file-input" style="display: none;" accept=".pdf,.doc,.docx,.png,.jpg">
             </div>
 
-
-            <!-- TOOL 3: EXTENSION -->
-            <a href="https://github.com/Aneesh1856/clearcut" target="_blank" class="sentinel-card" id="scout-trigger" style="cursor: pointer; display: flex; align-items: center; gap: 1.5rem; text-decoration: none; color: inherit;">
-              <i data-lucide="chrome" style="width: 24px; color: var(--accent);"></i>
+            <!-- TOOL 2: CAMERA -->
+            <div class="sentinel-card" id="camera-trigger" style="cursor: pointer; display: flex; align-items: center; gap: 1.5rem;">
+              <i data-lucide="camera" style="width: 24px; color: var(--primary);"></i>
               <div>
-                <span class="card-title" style="margin: 0;">Chrome Extension</span>
-                <span class="card-subtitle">Audit terms in your browser</span>
+                <span class="card-title" style="margin: 0;">Direct Scan</span>
+                <span class="card-subtitle">Use camera to audit paper</span>
               </div>
-            </a>
+            </div>
+
+            <!-- TOOL 3: SCOUT -->
+            <div class="sentinel-card" id="scout-trigger" style="cursor: pointer; display: flex; align-items: center; gap: 1.5rem;">
+              <i data-lucide="monitor" style="width: 24px; color: var(--accent);"></i>
+              <div>
+                <span class="card-title" style="margin: 0;">Screen Scout</span>
+                <span class="card-subtitle">Harvest text from other apps</span>
+              </div>
+            </div>
           </div>
 
           <div id="audit-file-preview" style="display: none; margin-bottom: 1.5rem;"></div>
@@ -213,7 +227,48 @@
     </div>
 
 
+    <!-- Lens Overlay -->
+    <div id="lens-overlay" class="overlay">
+      <div class="lens-header">
+        <div style="display: flex; flex-direction: column;">
+          <div style="font-size: 0.6rem; color: var(--primary); font-weight: 900; letter-spacing: 2px;">LENS CORE V3.1</div>
+          <div style="font-size: 1rem; font-weight: 700; color: #fff;">SENTINEL VISION ACTIVE</div>
+        </div>
+        <button id="close-lens" class="icon-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="lens-viewfinder">
+        <video id="lens-video" autoplay playsinline></video>
+        <div class="laser-line"></div>
+      </div>
+      <div class="lens-controls">
+         <button id="capture-snapshot" class="btn-primary" style="width: auto; padding: 1rem 2rem; border-radius: 99px;">
+           <i data-lucide="scan-line" class="pulse"></i> CAPTURE & AUDIT NOW
+         </button>
+      </div>
+    </div>
 
+    <!-- Scout Overlay (Screen Scan Engine) -->
+    <div id="scout-overlay" class="overlay">
+        <div class="lens-header" style="background: rgba(15, 23, 42, 0.95);">
+           <div>
+             <div style="font-size: 0.6rem; color: var(--accent); font-weight: 900; letter-spacing: 2px;">SCOUT ENGINE 7B</div>
+             <div style="font-size: 1rem; font-weight: 700; color: #fff;">HARVESTING ENGINE ACTIVE</div>
+           </div>
+           <button id="stop-scout" class="icon-btn" style="color: var(--danger);"><i data-lucide="square"></i></button>
+        </div>
+        <div class="scout-preview-container" style="height: 140px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <video id="scout-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+        </div>
+        <div id="scout-text-stream" style="flex: 1; padding: 1rem; font-family: monospace; font-size: 0.7rem; overflow-y: auto; background: rgba(0,0,0,0.4);">
+           <p class="text-dim">Sentinel is watching for legal terms...</p>
+        </div>
+        <div class="lens-controls" style="display: flex; gap: 10px; background: rgba(15, 23, 42, 0.95);">
+           <button id="scout-capture-now" class="btn-secondary" style="flex: 1;"><i data-lucide="zap"></i> HARVEST NOW</button>
+           <button id="scout-done" class="btn-primary" style="flex: 2;">
+             <i data-lucide="shield-check"></i> FINISH & AUDIT
+           </button>
+        </div>
+    </div>
 
     <!-- History Overlay -->
     <div id="history-overlay" class="overlay">
