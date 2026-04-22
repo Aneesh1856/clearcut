@@ -42,12 +42,12 @@ document.addEventListener('DOMContentLoaded', () => {
   initVoiceMode();
   initSpeedControl();
   initLens();
-  initScout();
   initVoiceDiagnostic();
   
   // Platform Diagnostic for APK debugging
-  if (Capacitor.isNativePlatform()) {
-    alert("SENTINEL NATIVE BRIDGE ACTIVE: " + Capacitor.getPlatform());
+  const cap = window.Capacitor || Capacitor;
+  if (cap.isNativePlatform()) {
+    alert("SENTINEL NATIVE BRIDGE ACTIVE: " + cap.getPlatform());
   }
 
   lucide.createIcons();
