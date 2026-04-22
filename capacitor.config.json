@@ -4,9 +4,8 @@
   "webDir": "dist",
   "server": {
     "url": "https://clear-cut-tc.vercel.app/",
-    "allowNavigation": [
-      "clear-cut-tc.vercel.app"
-    ],
+    "allowNavigation": ["clear-cut-tc.vercel.app"],
+    "androidScheme": "https",
     "cleartext": true
   }
 }

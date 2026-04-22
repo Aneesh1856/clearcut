@@ -41,14 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
   initTTS();
   initVoiceMode();
   initSpeedControl();
-  initLens();
   initVoiceDiagnostic();
-  
-  // Platform Diagnostic for APK debugging
-  const cap = window.Capacitor || Capacitor;
-  if (cap.isNativePlatform()) {
-    alert("SENTINEL NATIVE BRIDGE ACTIVE: " + cap.getPlatform());
-  }
+  // Robust Platform Diagnostic
+  const checkBridge = () => {
+    const cap = window.Capacitor;
+    if (cap && cap.isNativePlatform()) {
+      console.log("SENTINEL NATIVE BRIDGE ACTIVE: " + cap.getPlatform());
+      // Optional: alert("BRIDGE READY");
+    }
+  };
+  setTimeout(checkBridge, 1000);
 
   lucide.createIcons();
 });
@@ -427,15 +429,17 @@ function initVoiceInput() {
   
   if (!trigger) return;
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
+  const BrowserSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!BrowserSpeechRecognition && !Capacitor.isNativePlatform()) {
     trigger.onclick = () => alert("Voice input is not supported in this browser or over insecure connections (HTTPS required).");
     return;
   }
 
-  const recognition = new SpeechRecognition();
-  recognition.continuous = false;
-  recognition.interimResults = true;
+  const recognition = BrowserSpeechRecognition ? new BrowserSpeechRecognition() : null;
+  if (recognition) {
+    recognition.continuous = false;
+    recognition.interimResults = true;
+  }
 
   const langMap = {
     'eng': 'en-IN',
@@ -449,6 +453,7 @@ function initVoiceInput() {
   trigger.onclick = async () => {
     if (Capacitor.isNativePlatform()) {
       try {
+        // Use the imported SpeechRecognition from @capacitor-community/speech-recognition
         const perm = await SpeechRecognition.requestPermissions();
         if (perm.speechRecognition !== 'granted') {
           alert("Microphone permission denied.");
@@ -471,9 +476,18 @@ function initVoiceInput() {
       trigger.classList.add('recording');
       chatInput.placeholder = "Listening...";
       
+      // Clear existing listeners to prevent duplicates
+      await SpeechRecognition.removeAllListeners();
+
       SpeechRecognition.addListener('partialResults', (data) => {
         if (data.matches && data.matches.length > 0) {
           chatInput.value = data.matches[0];
+        }
+      });
+
+      SpeechRecognition.addListener('listeningState', (data) => {
+        if (data.status === 'stopped') {
+          stopVoice();
         }
       });
 
@@ -483,7 +497,13 @@ function initVoiceInput() {
         popup: false,
       });
 
+      } catch (err) {
+        console.error("Native Speech Error:", err);
+        alert("Speech error: " + err.message);
+        stopVoice();
+      }
     } else {
+      if (!recognition) return;
       if (state.isVoiceActive) {
         recognition.stop();
       } else {
@@ -493,28 +513,30 @@ function initVoiceInput() {
     }
   };
 
-  recognition.onstart = () => {
-    state.isVoiceActive = true;
-    trigger.classList.add('recording');
-    chatInput.classList.add('listening');
-    chatInput.placeholder = "Listening to you...";
-  };
+  if (recognition) {
+    recognition.onstart = () => {
+      state.isVoiceActive = true;
+      trigger.classList.add('recording');
+      chatInput.classList.add('listening');
+      chatInput.placeholder = "Listening to you...";
+    };
 
-  recognition.onresult = (e) => {
-    let transcript = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-        transcript += e.results[i][0].transcript;
-    }
-    chatInput.value = transcript;
-  };
+    recognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+          transcript += e.results[i][0].transcript;
+      }
+      chatInput.value = transcript;
+    };
 
-  recognition.onerror = () => {
-    stopVoice();
-  };
+    recognition.onerror = () => {
+      stopVoice();
+    };
 
-  recognition.onend = () => {
-    stopVoice();
-  };
+    recognition.onend = () => {
+      stopVoice();
+    };
+  }
 
   const stopVoice = () => {
     state.isVoiceActive = false;
@@ -657,8 +679,8 @@ function initVoiceMode() {
 
   if (!trigger) return;
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+  const BrowserSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = BrowserSpeechRecognition ? new BrowserSpeechRecognition() : null;
   
   if (recognition) {
     recognition.continuous = false;
@@ -675,7 +697,7 @@ function initVoiceMode() {
   };
 
   const startVoiceMode = () => {
-    if (!recognition) {
+    if (!recognition && !Capacitor.isNativePlatform()) {
       alert("Voice features not supported in this browser.");
       return;
     }
@@ -710,18 +732,28 @@ function initVoiceMode() {
       const { available } = await SpeechRecognition.available();
       if (!available) return;
       
-      state.isVoiceActive = true;
-      document.querySelector('.voice-avatar').classList.add('speaking');
-      
+      // Clear existing listeners
+      await SpeechRecognition.removeAllListeners();
+
       SpeechRecognition.addListener('partialResults', (data) => {
         if (data.matches && data.matches.length > 0) {
           transcriptPreview.textContent = data.matches[0];
         }
       });
 
-      // Handle final result via onend or a timer? Capacitor plugin usually has a stop/result pattern
-      // Actually, standard behavior is it stops when you stop talking.
-      
+      // Handle the final result when speech recognition stops
+      SpeechRecognition.addListener('listeningState', (data) => {
+        if (data.status === 'stopped' && state.isVoiceModeActive) {
+           const finalTranscript = transcriptPreview.textContent;
+           if (finalTranscript && finalTranscript !== "I'm listening..." && finalTranscript !== "Your turn...") {
+             processVoiceInput(finalTranscript);
+           } else if (state.isVoiceModeActive) {
+             // Restart if nothing was heard
+             startListening();
+           }
+        }
+      });
+
       await SpeechRecognition.start({
         language: langMap[state.selectedLang] || 'en-IN',
         partialResults: true,
