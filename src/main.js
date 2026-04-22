@@ -894,17 +894,18 @@ function initChat() {
   if (initialReplayBtn) {
     initialReplayBtn.onclick = async (e) => {
       e.stopPropagation();
-      const icon = initialReplayBtn.querySelector('i');
+      const icon = initialReplayBtn.querySelector('[data-lucide]');
       if (state.isCurrentlySpeaking) {
         await stopSpeaking();
-        icon.setAttribute('data-lucide', 'volume-2');
+        if (icon) icon.setAttribute('data-lucide', 'volume-2');
         lucide.createIcons();
       } else {
         const text = initialReplayBtn.parentElement.querySelector('.msg-content').textContent;
-        icon.setAttribute('data-lucide', 'square');
+        if (icon) icon.setAttribute('data-lucide', 'square');
         lucide.createIcons();
         await speak(text, true);
-        icon.setAttribute('data-lucide', 'volume-2');
+        const iconAfter = initialReplayBtn.querySelector('[data-lucide]');
+        if (iconAfter) iconAfter.setAttribute('data-lucide', 'volume-2');
         lucide.createIcons();
       }
     };
@@ -990,17 +991,18 @@ function addMessage(sender, text) {
     const replayBtn = msg.querySelector('.replay-btn');
     replayBtn.onclick = async (e) => {
       e.stopPropagation();
-      const icon = replayBtn.querySelector('i');
+      const icon = replayBtn.querySelector('[data-lucide]');
       if (state.isCurrentlySpeaking) {
         await stopSpeaking();
-        icon.setAttribute('data-lucide', 'volume-2');
+        if (icon) icon.setAttribute('data-lucide', 'volume-2');
         lucide.createIcons();
       } else {
         const currentText = msg.querySelector('.msg-content').textContent;
-        icon.setAttribute('data-lucide', 'square');
+        if (icon) icon.setAttribute('data-lucide', 'square');
         lucide.createIcons();
         await speak(currentText, true);
-        icon.setAttribute('data-lucide', 'volume-2');
+        const iconAfter = replayBtn.querySelector('[data-lucide]');
+        if (iconAfter) iconAfter.setAttribute('data-lucide', 'volume-2');
         lucide.createIcons();
       }
     };
