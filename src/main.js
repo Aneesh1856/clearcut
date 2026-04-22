@@ -532,71 +532,87 @@ async function stopSpeaking() {
   lucide.createIcons();
 }
 
-async function speak(text, force = false) {
-  if (!force && (!state.isTTSActive || (!window.speechSynthesis && !Capacitor.isNativePlatform()))) return;
+function speak(text, force = false) {
+  return new Promise(async (resolve) => {
+    if (!force && (!state.isTTSActive || (!window.speechSynthesis && !Capacitor.isNativePlatform()))) {
+      resolve();
+      return;
+    }
 
-  if (state.isCurrentlySpeaking) {
-    await stopSpeaking();
-  }
+    if (state.isCurrentlySpeaking) {
+      await stopSpeaking();
+    }
 
-  state.isCurrentlySpeaking = true;
+    state.isCurrentlySpeaking = true;
 
-  if (Capacitor.isNativePlatform()) {
-    try {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const langMap = {
+          'eng': 'en-IN', 'eng+hin': 'hi-IN', 'eng+kan': 'kn-IN',
+          'eng+tam': 'ta-IN', 'eng+tel': 'te-IN', 'eng+ben': 'bn-IN'
+        };
+        await TextToSpeech.speak({
+          text: cleanTextForSpeech(text),
+          lang: langMap[state.selectedLang] || 'en-IN',
+          rate: state.voiceRate,
+          pitch: 1.0,
+          volume: 1.0,
+          category: 'ambient'
+        });
+      } catch (e) {
+        console.error("Native TTS Error:", e);
+      } finally {
+        state.isCurrentlySpeaking = false;
+        resolve();
+      }
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    
+    setTimeout(() => {
+      const cleanedText = cleanTextForSpeech(text);
       const langMap = {
         'eng': 'en-IN', 'eng+hin': 'hi-IN', 'eng+kan': 'kn-IN',
         'eng+tam': 'ta-IN', 'eng+tel': 'te-IN', 'eng+ben': 'bn-IN'
       };
-      await TextToSpeech.speak({
-        text: cleanTextForSpeech(text),
-        lang: langMap[state.selectedLang] || 'en-IN',
-        rate: state.voiceRate,
-        pitch: 1.0,
-        volume: 1.0,
-        category: 'ambient'
-      });
-      state.isCurrentlySpeaking = false;
-    } catch (e) {
-      console.error("Native TTS Error:", e);
-      state.isCurrentlySpeaking = false;
-    }
-    return;
-  }
-
-  window.speechSynthesis.cancel();
-  
-  // Wait a tiny bit for cancel to settle
-  setTimeout(() => {
-    const cleanedText = cleanTextForSpeech(text);
-    const langMap = {
-      'eng': 'en-IN', 'eng+hin': 'hi-IN', 'eng+kan': 'kn-IN',
-      'eng+tam': 'ta-IN', 'eng+tel': 'te-IN', 'eng+ben': 'bn-IN'
-    };
-    const targetLang = langMap[state.selectedLang] || 'en-IN';
-  
-    // Split by punctuation but also by length to be safe
-    const chunks = cleanedText.match(/[^.!?]{1,200}[.!?]|[^.!?]{1,200}/g) || [cleanedText];
+      const targetLang = langMap[state.selectedLang] || 'en-IN';
     
-    state.utteranceQueue = []; // Clear old ones
+      const chunks = cleanedText.match(/[^.!?]{1,200}[.!?]|[^.!?]{1,200}/g) || [cleanedText];
+      state.utteranceQueue = [];
 
-    chunks.forEach(chunk => {
-      const utterance = new SpeechSynthesisUtterance(chunk.trim());
-      utterance.lang = targetLang;
-      utterance.rate = state.voiceRate;
-      utterance.pitch = 1.05;
-  
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(v => v.lang.startsWith(targetLang.split('-')[0]) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium')));
-      if (preferredVoice) utterance.voice = preferredVoice;
-  
-      state.utteranceQueue.push(utterance); // Keep in memory
-      window.speechSynthesis.speak(utterance);
-    });
-    state.isCurrentlySpeaking = false;
-    // Reset all icons
-    document.querySelectorAll('.replay-btn i').forEach(i => i.setAttribute('data-lucide', 'volume-2'));
-    lucide.createIcons();
-  }, 50);
+      chunks.forEach((chunk, index) => {
+        const utterance = new SpeechSynthesisUtterance(chunk.trim());
+        utterance.lang = targetLang;
+        utterance.rate = state.voiceRate;
+        utterance.pitch = 1.05;
+    
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => v.lang.startsWith(targetLang.split('-')[0]) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium')));
+        if (preferredVoice) utterance.voice = preferredVoice;
+    
+        if (index === chunks.length - 1) {
+          utterance.onend = () => {
+            state.isCurrentlySpeaking = false;
+            resolve();
+          };
+          utterance.onerror = () => {
+            state.isCurrentlySpeaking = false;
+            resolve();
+          };
+        }
+
+        state.utteranceQueue.push(utterance);
+        window.speechSynthesis.speak(utterance);
+      });
+      
+      // Safety timeout if chunks is empty or speech fails to start
+      if (chunks.length === 0) {
+        state.isCurrentlySpeaking = false;
+        resolve();
+      }
+    }, 50);
+  });
 }
 
 // 8. Voice Mode (Call Experience)
@@ -876,19 +892,21 @@ function initChat() {
   const initialReplayBtn = document.querySelector('.msg-bot .replay-btn');
 
   if (initialReplayBtn) {
-    initialReplayBtn.onclick = async () => {
+    initialReplayBtn.onclick = async (e) => {
+      e.stopPropagation();
       const icon = initialReplayBtn.querySelector('i');
       if (state.isCurrentlySpeaking) {
         await stopSpeaking();
         icon.setAttribute('data-lucide', 'volume-2');
+        lucide.createIcons();
       } else {
         const text = initialReplayBtn.parentElement.querySelector('.msg-content').textContent;
         icon.setAttribute('data-lucide', 'square');
         lucide.createIcons();
         await speak(text, true);
         icon.setAttribute('data-lucide', 'volume-2');
+        lucide.createIcons();
       }
-      lucide.createIcons();
     };
   }
 
@@ -970,19 +988,21 @@ function addMessage(sender, text) {
       <button class="replay-btn" title="Speak message"><i data-lucide="volume-2"></i></button>
     `;
     const replayBtn = msg.querySelector('.replay-btn');
-    replayBtn.onclick = async () => {
+    replayBtn.onclick = async (e) => {
+      e.stopPropagation();
       const icon = replayBtn.querySelector('i');
       if (state.isCurrentlySpeaking) {
         await stopSpeaking();
         icon.setAttribute('data-lucide', 'volume-2');
+        lucide.createIcons();
       } else {
         const currentText = msg.querySelector('.msg-content').textContent;
-        icon.setAttribute('data-lucide', 'square'); // Stop icon
+        icon.setAttribute('data-lucide', 'square');
         lucide.createIcons();
         await speak(currentText, true);
         icon.setAttribute('data-lucide', 'volume-2');
+        lucide.createIcons();
       }
-      lucide.createIcons();
     };
   } else {
     msg.textContent = text;
