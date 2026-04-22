@@ -424,18 +424,18 @@ function initVoiceInput() {
 
   trigger.onclick = async () => {
     if (Capacitor.isNativePlatform()) {
-      // Explicitly request permissions first
-      const perm = await SpeechRecognition.requestPermissions();
-      if (perm.speechRecognition !== 'granted') {
-        alert("Microphone permission is required for voice input.");
-        return;
-      }
+      try {
+        const perm = await SpeechRecognition.requestPermissions();
+        if (perm.speechRecognition !== 'granted') {
+          alert("Microphone permission denied.");
+          return;
+        }
 
-      const { available } = await SpeechRecognition.available();
-      if (!available) {
-        alert("Speech recognition not available on this device.");
-        return;
-      }
+        const { available } = await SpeechRecognition.available();
+        if (!available) {
+          alert("Speech Recognition engine not available on this device.");
+          return;
+        }
       
       if (state.isVoiceActive) {
         await SpeechRecognition.stop();
